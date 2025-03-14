@@ -21,7 +21,7 @@ public final class Constants {
 
     // Motor Speeds
     public static final double elevatorMotorSpeedSlow = 0.3;
-    public static final double elevatorMotorSpeedFast = 0.5;
+    public static final double elevatorMotorSpeedFast = 0.7;
     public static final double climberMotorSpeed = 0.3;
     public static final double resetClimberMotorSpeed = 0.2;
     public static final double funnelMotorSpeed = 0.2;
@@ -43,10 +43,10 @@ public final class Constants {
         new Translation2d(-kWheelBase / 2, -kTrackWidth / 2));
 
     // Angular offsets of the modules relative to the chassis in radians
-    public static final double kFrontLeftChassisAngularOffset = -Math.PI / 2;
+    public static final double kFrontLeftChassisAngularOffset = Math.PI / 2;
     public static final double kFrontRightChassisAngularOffset = 0;
     public static final double kBackLeftChassisAngularOffset = Math.PI;
-    public static final double kBackRightChassisAngularOffset = Math.PI / 2;
+    public static final double kBackRightChassisAngularOffset = -Math.PI / 2;
 
     // SWERVE SPARK MAX CAN IDs
     public static final int kFrontLeftDrivingCanId = 1;
@@ -100,6 +100,7 @@ public final class Constants {
     public static final int kDriverControllerPort = 0;
     public static final int kOperatorControllerPort = 1;
     public static final double kDriveDeadband = 0.05;
+    public static final double kEndEffectorDeadband = 0.5;
   }
 
   public static final class AutoConstants {

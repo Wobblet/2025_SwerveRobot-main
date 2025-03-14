@@ -80,6 +80,14 @@ public class RobotContainer {
                 -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
                 true, DriveConstants.modeValue),
             m_robotDrive));
+
+    endEffectorSubsystem.setDefaultCommand(
+      new RunCommand(
+        () -> endEffectorSubsystem.triggerEndEffector(
+          -MathUtil.applyDeadband(m_driverController.getLeftTriggerAxis(), OIConstants.kEndEffectorDeadband),
+          -MathUtil.applyDeadband(m_driverController.getRightTriggerAxis(), OIConstants.kEndEffectorDeadband)
+        ), 
+        endEffectorSubsystem));
   }
 
   /**
@@ -113,8 +121,8 @@ public class RobotContainer {
 /*Y Button */    new JoystickButton(m_driverController, 6).whileTrue(new RaiseFunnelCmd(funnelSubsystem, Constants.DriveConstants.funnelMotorSpeed));
 /*A Button */    new JoystickButton(m_driverController, 1).whileTrue(new ResetFunnelCmd(funnelSubsystem, Constants.DriveConstants.resetFunnelMotorSpeed));
     // Score Controls
-/*L2 !Need to change to axis! */    new JoystickButton(m_driverController, Axis.kLeftTrigger.value).whileTrue(new ScoreCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorFullSpeed));
-/*R2 !Need to change to axis!*/    new JoystickButton(m_driverController, Axis.kRightTrigger.value).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorSlowSpeedDrive));
+/*L2 !Need to change to axis! */    //new JoystickButton(m_driverController, Axis.kLeftTrigger.value).whileTrue(new ScoreCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorFullSpeed));
+/*R2 !Need to change to axis!*/    //new JoystickButton(m_driverController, Axis.kRightTrigger.value).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorSlowSpeedDrive));
 /*B Button */ new JoystickButton(m_driverController, 2).whileTrue(new RetreatEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.retreatMotorSpeed));
 
 
@@ -131,7 +139,7 @@ public class RobotContainer {
     // reef level 3
 /*X Button */    //if (elevatorSubsystem.getElevatorEncoderValue() >= 2.5 && m_operatorController.getRawButton(1)){
       //new ElevatorUpCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeed);
-/*elevator down fast */      new JoystickButton(m_operatorController, 1).whileTrue(new ElevatorDownCmd(elevatorSubsystem, -Constants.DriveConstants.elevatorMotorSpeedFast));
+/*elevator down fast */      new JoystickButton(m_operatorController, 1).whileTrue(new ElevatorDownCmd(elevatorSubsystem, -1 * Constants.DriveConstants.elevatorMotorSpeedFast));
     //}
     // reef level 2
 /*B Button */    //else if (elevatorSubsystem.getElevatorEncoderValue() >= 1.8 && m_operatorController.getRawButton(3)){

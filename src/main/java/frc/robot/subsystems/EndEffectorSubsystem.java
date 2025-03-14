@@ -14,6 +14,18 @@ public class EndEffectorSubsystem extends SubsystemBase {
         endEffectorMotor1.set(speed);
         endEffectorMotor2.set(-speed);
     }
+
+    public void triggerEndEffector(double Lspeed, double Rspeed){
+        if (Lspeed == .6){
+            endEffectorMotor1.set(Lspeed);
+            endEffectorMotor2.set(-Lspeed);
+        }
+        else if(Rspeed == .6){
+            endEffectorMotor1.set(Rspeed);
+            endEffectorMotor2.set(Rspeed);
+        }
+
+    }
     
     @Override
     public void periodic(){
