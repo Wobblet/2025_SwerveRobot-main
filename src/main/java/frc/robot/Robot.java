@@ -7,6 +7,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.EndEffectorSubsystem;
+
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -14,9 +16,10 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  * this project, you must also update the Main.java file in the project.
  */
 public class Robot extends TimedRobot {
-  //private Command m_autonomousCommand;
+  private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
+  
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -54,17 +57,18 @@ public class Robot extends TimedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    //m_autonomousCommand = m_robotContainer.getAutonomousPathCommand();
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     // schedule the autonomous command (example)
-    //if (m_autonomousCommand != null) {
-    //  m_autonomousCommand.schedule();
-    //}
+    if (m_autonomousCommand != null) {
+      m_autonomousCommand.schedule();
+    }
   }
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+  }
 
   @Override
   public void teleopInit() {
@@ -72,14 +76,26 @@ public class Robot extends TimedRobot {
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
-    //if (m_autonomousCommand != null) {
-    //  m_autonomousCommand.cancel();
-    //}
+    if (m_autonomousCommand != null) {
+      m_autonomousCommand.cancel();
+    }
   }
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    if (m_robotContainer.m_driverController.getRawAxis(3) > .3){
+      m_robotContainer.endEffectorSubsystem.setEndEffector(0);
+    } else {
+      m_robotContainer.endEffectorSubsystem.setEndEffector(0);
+    }
+
+    if (m_robotContainer.m_driverController.getRawAxis(2) > .3){
+      m_robotContainer.endEffectorSubsystem.setEndEffector(Constants.DriveConstants.scoreMotorSlowSpeedDrive);
+    } else {
+      m_robotContainer.endEffectorSubsystem.setEndEffector(0);
+    }
+  }
 
   @Override
   public void testInit() {

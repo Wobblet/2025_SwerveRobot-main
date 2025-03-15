@@ -1,8 +1,18 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.servohub.ServoHub.ResetMode;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkRelativeEncoder;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -10,32 +20,95 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 //import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.DriveConstants;
 
 public class ElevatorSubsystem extends SubsystemBase {
-    // private final DigitalInput topLimitSwitch = new DigitalInput(0);
-    // private final DigitalInput bottomLimitSwitch = new DigitalInput(1);
-    private final static SparkMax elevatorMotor1 = new SparkMax(Constants.DriveConstants.elevatorId, MotorType.kBrushless);
-    public final SparkAbsoluteEncoder elevatorEncoder = elevatorMotor1.getAbsoluteEncoder(); /*Change to Relative Encoder*/
-
-    public void setElevator(double speed){
-        elevatorMotor1.set(speed);
+        // private final DigitalInput topLimitSwitch = new DigitalInput(0);
+        // private final DigitalInput bottomLimitSwitch = new DigitalInput(1);
+        private SparkMax elevatorMotor1;
+            //public final SparkAbsoluteEncoder elevatorEncoder = elevatorMotor1.getAbsoluteEncoder(); /*Change to Relative Encoder*/
+        private RelativeEncoder elevatorRelative;
+        private SparkClosedLoopController m_ElevatorPID;
+        private SparkMaxConfig elevatorMotorConfig;
+    
+        public enum CoralPivotPositions {
+            L1(0.2),
+            L2(0),
+            L3(0),
+            L4(0);
+    
+            private final double value;
+    
+            CoralPivotPositions(double value) {
+                this.value = value;
+            }
+    
+            public double getValue() {
+                return value;
+            }
+    
+        }
+            
+        public ElevatorSubsystem(){
+            elevatorMotor1 = new SparkMax(Constants.DriveConstants.elevatorId, MotorType.kBrushless);
+            elevatorRelative = elevatorMotor1.getEncoder();
+            m_ElevatorPID = elevatorMotor1.getClosedLoopController();
+            elevatorMotorConfig = new SparkMaxConfig();
+    
+            elevatorMotorConfig.closedLoop
+                .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+                .p(4)
+                .d(0)
+                .outputRange(-.5, .5);
+            elevatorMotorConfig
+                .inverted(false)
+                .smartCurrentLimit(40)
+                .idleMode(IdleMode.kBrake);
+            elevatorMotor1.configure(elevatorMotorConfig, com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        }
+        
+        public void setElevator(double speed){
+            elevatorMotor1.set(speed);
+        }
+    
+        public void stopElevator(){
+            elevatorMotor1.stopMotor();
+        }
+        
+        public double getElevatorEncoderValue(){
+            return elevatorRelative.getPosition();
+        }
+    
+        public double getElevatorVelocity(){
+            return elevatorRelative.getVelocity();
+        }
+    
+        public void setPosition(CoralPivotPositions position){
+            m_ElevatorPID.setReference(position.getValue(), ControlType.kPosition);
+        }
+        
+            // public double resetElevatorEncoderValue(){
+            //     return elevatorEncoder.resetEncoders();
+            // }
+        
+            @Override
+            public void periodic(){
+                SmartDashboard.putNumber("Elevator Encoder Value", elevatorRelative.getPosition());
+            }
+        
+            @Override
+            public void simulationPeriodic(){
+        
+            }
+    
+            public void resetElevatorPose(){
+                if (DriveConstants.kStartPose + 0.04 > elevatorRelative.getPosition()){
+                    elevatorMotor1.set(DriveConstants.elevatorMotorSpeedSlow);
+                } else if (DriveConstants.kStartPose - 0.04 < elevatorRelative.getPosition()){
+                    elevatorMotor1.set(-DriveConstants.elevatorMotorSpeedSlow);
+                } else{
+                    elevatorMotor1.stopMotor();
+                }
+            }
+    
     }
-
-    public double getElevatorEncoderValue(){
-        return elevatorEncoder.getPosition();
-    }
-
-    // public double resetElevatorEncoderValue(){
-    //     return elevatorEncoder.resetEncoders();
-    // }
-
-    @Override
-    public void periodic(){
-        SmartDashboard.putNumber("Elevator Encoder Value", elevatorEncoder.getPosition());
-    }
-
-    @Override
-    public void simulationPeriodic(){
-
-    }
-}

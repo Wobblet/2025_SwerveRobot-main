@@ -22,14 +22,18 @@ public final class Constants {
     // Motor Speeds
     public static final double elevatorMotorSpeedSlow = 0.3;
     public static final double elevatorMotorSpeedFast = 0.7;
-    public static final double climberMotorSpeed = 0.3;
-    public static final double resetClimberMotorSpeed = 0.2;
-    public static final double funnelMotorSpeed = 0.2;
+    public static final double climberMotorSpeed = 0.6;
+    public static final double resetClimberMotorSpeed = 0.4;
+    public static final double funnelMotorSpeed = 0.1;
     public static final double resetFunnelMotorSpeed = 0.1;
-    public static final double scoreMotorFullSpeed = 0.5;
+    public static final double scoreMotorFullSpeed = 0.4;
     public static final double scoreMotorSlowSpeed = 0.1;
     public static final double scoreMotorSlowSpeedDrive = 0.3;
     public static final double retreatMotorSpeed = 0.08;
+
+    // Elevator Constants
+    public static final double kStartPose = -44.4;
+
 
     // Chassis configuration
     public static final double kTrackWidth = Units.inchesToMeters(26.5);
