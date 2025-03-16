@@ -39,7 +39,7 @@ import frc.robot.commands.SetEndEffectorCmd;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
-import frc.robot.subsystems.ElevatorSubsystem.CoralPivotPositions;
+import frc.robot.subsystems.ElevatorSubsystem.ElevatorPositions;
 import frc.robot.subsystems.EndEffectorSubsystem;
 import frc.robot.subsystems.FunnelSubsystem;
 
@@ -113,18 +113,19 @@ public class RobotContainer {
             () -> m_robotDrive.setX(),
             m_robotDrive));
     // slowest mode
-/*L1 */    new JoystickButton(m_driverController, 4)
-        .whileTrue(new RunCommand(
+/*L1 */    new JoystickButton(m_driverController, 5)
+        .toggleOnTrue(new RunCommand(
             () -> m_robotDrive.changeModeValue(1),
             m_robotDrive));
     // slow mode
-/*R1 */    new JoystickButton(m_driverController, 5)
+/*R1 */    new JoystickButton(m_driverController, 6)
         .whileTrue(new RunCommand(
             () -> m_robotDrive.changeModeValue(2),
             m_robotDrive));
     // Climber Controls  
-/*Start */    new JoystickButton(m_driverController, 8).whileTrue(new ClimbCmd(climberSubsystem, Constants.DriveConstants.climberMotorSpeed));
-/*Back */    new JoystickButton(m_driverController, 7).whileTrue(new ResetPoseCmd(m_robotDrive));
+/*Start */    new JoystickButton(m_driverController, 8).whileTrue(new ClimbCmd(climberSubsystem, -Constants.DriveConstants.climberMotorSpeed));
+new JoystickButton(m_driverController, 7).whileTrue(new ClimbCmd(climberSubsystem, Constants.DriveConstants.climberMotorSpeed));
+/*Back */    //new JoystickButton(m_driverController, 7).whileTrue(new ResetPoseCmd(m_robotDrive));
     // Funnel Controls
 /*Y Button */    new JoystickButton(m_driverController, 4).whileTrue(new RaiseFunnelCmd(funnelSubsystem, Constants.DriveConstants.funnelMotorSpeed));
 /*A Button */    new JoystickButton(m_driverController, 1).whileTrue(new ResetFunnelCmd(funnelSubsystem, Constants.DriveConstants.resetFunnelMotorSpeed));
@@ -134,10 +135,7 @@ public class RobotContainer {
 
 /*B Button */ new JoystickButton(m_driverController, 2).whileTrue(new RetreatEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.retreatMotorSpeed));
 
-//new JoystickButton(m_operatorController, 0).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(CoralPivotPositions.L1))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-//new JoystickButton(m_operatorController, 0).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(CoralPivotPositions.L2))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-//new JoystickButton(m_operatorController, 0).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(CoralPivotPositions.L3))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-//new JoystickButton(m_operatorController, 0).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(CoralPivotPositions.L4))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+
 
 
   }
@@ -153,12 +151,12 @@ public class RobotContainer {
     // reef level 3
 /*X Button */    //if (elevatorSubsystem.getElevatorEncoderValue() >= 2.5 && m_operatorController.getRawButton(1)){
       //new ElevatorUpCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeed);
-/*elevator down fast */      new JoystickButton(m_operatorController, 1).whileTrue(new ElevatorDownCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeedFast));
+/*elevator down fast */      //new JoystickButton(m_operatorController, 1).whileTrue(new ElevatorDownCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeedFast));
     //}
     // reef level 2
 /*B Button */    //else if (elevatorSubsystem.getElevatorEncoderValue() >= 1.8 && m_operatorController.getRawButton(3)){
       //new ElevatorUpCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeed);
-/*elevator up slow */      new JoystickButton(m_operatorController, 3).whileTrue(new ElevatorUpCmd(elevatorSubsystem, -Constants.DriveConstants.elevatorMotorSpeedSlow));
+/*elevator up slow */      //new JoystickButton(m_operatorController, 3).whileTrue(new ElevatorUpCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeedSlow));
     //}
     // reef level 1
 /*R1 */    new JoystickButton(m_operatorController, 6).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorSlowSpeed));
@@ -168,8 +166,8 @@ public class RobotContainer {
      // new ElevatorUpCmd(elevatorSubsystem, 0);
     //}
     // Elevator Controls
-/*Y Button*/  new JoystickButton(m_operatorController, 4).whileTrue(new ElevatorUpCmd(elevatorSubsystem, -Constants.DriveConstants.elevatorMotorSpeedFast));
-/*A Button */    new JoystickButton(m_operatorController, 2).whileTrue(new ElevatorDownCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeedSlow));
+/*Y Button*/  //new JoystickButton(m_operatorController, 4).whileTrue(new ElevatorUpCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeedFast));
+/*A Button */    //new JoystickButton(m_operatorController, 2).whileTrue(new ElevatorDownCmd(elevatorSubsystem, -Constants.DriveConstants.elevatorMotorSpeedSlow));
     // Climber Controls
 /*Start Button*/    new JoystickButton(m_operatorController, 10).whileTrue(new ClimbCmd(climberSubsystem, Constants.DriveConstants.climberMotorSpeed));
 /*Back Button */    new JoystickButton(m_operatorController, 9).whileTrue(new ResetClimberCmd(climberSubsystem, -Constants.DriveConstants.resetClimberMotorSpeed));
@@ -177,12 +175,17 @@ public class RobotContainer {
 /*L2 */    new JoystickButton(m_operatorController, 7).whileTrue(new RaiseFunnelCmd(funnelSubsystem, Constants.DriveConstants.funnelMotorSpeed));
 
     // Reset Elevator
-/*R2 */    new JoystickButton(m_operatorController, 8).whileTrue(new ElevatorResetCmd(elevatorSubsystem, 0));
+/*R2 */    //new JoystickButton(m_operatorController, 8).whileTrue(new ElevatorResetCmd(elevatorSubsystem, 0));
     // Score Controls
 /*L3 */    new JoystickButton(m_operatorController, 11).whileTrue(new ScoreCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorFullSpeed));
 /*R3 */    new JoystickButton(m_operatorController, 12).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorSlowSpeed));
 /*L1 */    new JoystickButton(m_operatorController, 5).whileTrue(new RetreatEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.retreatMotorSpeed));
 
+new JoystickButton(m_operatorController, 8).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.GL))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+new JoystickButton(m_operatorController, 1).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L1))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+new JoystickButton(m_operatorController, 4).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L2))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+new JoystickButton(m_operatorController, 2).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L3))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+new JoystickButton(m_operatorController, 3).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L4))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
 
       }
 

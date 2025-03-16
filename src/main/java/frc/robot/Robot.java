@@ -85,7 +85,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     if (m_robotContainer.m_driverController.getRawAxis(3) > .3){
-      m_robotContainer.endEffectorSubsystem.setEndEffector(0);
+      m_robotContainer.endEffectorSubsystem.setEndEffector(Constants.DriveConstants.scoreMotorSlowSpeed);
     } else {
       m_robotContainer.endEffectorSubsystem.setEndEffector(0);
     }

@@ -20,13 +20,13 @@ public final class Constants {
     public static final double kMaxAngularSpeed = 2 * Math.PI; // radians per second
 
     // Motor Speeds
-    public static final double elevatorMotorSpeedSlow = 0.3;
-    public static final double elevatorMotorSpeedFast = 0.7;
-    public static final double climberMotorSpeed = 0.6;
+    public static final double elevatorMotorSpeedSlow = 0.9;
+    public static final double elevatorMotorSpeedFast = .9;
+    public static final double climberMotorSpeed = 0.7;
     public static final double resetClimberMotorSpeed = 0.4;
     public static final double funnelMotorSpeed = 0.1;
     public static final double resetFunnelMotorSpeed = 0.1;
-    public static final double scoreMotorFullSpeed = 0.4;
+    public static final double scoreMotorFullSpeed = 0.35;
     public static final double scoreMotorSlowSpeed = 0.1;
     public static final double scoreMotorSlowSpeedDrive = 0.3;
     public static final double retreatMotorSpeed = 0.08;

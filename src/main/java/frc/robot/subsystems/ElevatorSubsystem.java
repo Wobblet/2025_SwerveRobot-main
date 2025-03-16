@@ -31,15 +31,16 @@ public class ElevatorSubsystem extends SubsystemBase {
         private SparkClosedLoopController m_ElevatorPID;
         private SparkMaxConfig elevatorMotorConfig;
     
-        public enum CoralPivotPositions {
-            L1(0.2),
-            L2(0),
-            L3(0),
-            L4(0);
+        public enum ElevatorPositions {
+            GL(0),
+            L1(43),
+            L2(200.9),
+            L3(319.47),
+            L4(515);
     
             private final double value;
     
-            CoralPivotPositions(double value) {
+            ElevatorPositions(double value) {
                 this.value = value;
             }
     
@@ -57,14 +58,17 @@ public class ElevatorSubsystem extends SubsystemBase {
     
             elevatorMotorConfig.closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                .p(4)
+                .p(.5)
+                .i(0)
                 .d(0)
-                .outputRange(-.5, .5);
+                .outputRange(-1, 1);
             elevatorMotorConfig
-                .inverted(false)
+                .inverted(true)
                 .smartCurrentLimit(40)
                 .idleMode(IdleMode.kBrake);
             elevatorMotor1.configure(elevatorMotorConfig, com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+            elevatorRelative.setPosition(0);
         }
         
         public void setElevator(double speed){
@@ -83,7 +87,7 @@ public class ElevatorSubsystem extends SubsystemBase {
             return elevatorRelative.getVelocity();
         }
     
-        public void setPosition(CoralPivotPositions position){
+        public void setPosition(ElevatorPositions position){
             m_ElevatorPID.setReference(position.getValue(), ControlType.kPosition);
         }
         
