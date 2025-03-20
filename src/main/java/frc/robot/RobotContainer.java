@@ -6,13 +6,25 @@ package frc.robot;
 //import com.pathplanner.lib.auto.AutoBuilder;
 //import com.pathplanner.lib.commands.PathPlannerAuto;
 
+import java.util.List;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 //import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller.Button;
-import edu.wpi.first.wpilibj.XboxController.Axis;
-import edu.wpi.first.wpilibj.simulation.JoystickSim;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 //import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 //import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 //import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -21,18 +33,17 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.ClimbCmd;
-import frc.robot.commands.ElevatorDownCmd;
 import frc.robot.commands.ElevatorResetCmd;
-import frc.robot.commands.ElevatorUpCmd;
 import frc.robot.commands.RaiseFunnelCmd;
 import frc.robot.commands.ResetClimberCmd;
 import frc.robot.commands.ResetFunnelCmd;
-import frc.robot.commands.ResetPoseCmd;
 import frc.robot.commands.RetreatEndEffectorCmd;
 import frc.robot.commands.ScoreCmd;
 import frc.robot.commands.SetEndEffectorCmd;
@@ -133,7 +144,7 @@ new JoystickButton(m_driverController, 7).whileTrue(new ClimbCmd(climberSubsyste
 /*L2 !Need to change to axis! */  //new JoystickButton(m_driverController, Axis.kLeftTrigger.value).whileTrue(new ScoreCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorFullSpeed));
 /*R2 !Need to change to axis!*/   //new JoystickButton(m_driverController, Axis.kRightTrigger.value).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorSlowSpeedDrive));
 
-/*B Button */ new JoystickButton(m_driverController, 2).whileTrue(new RetreatEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.retreatMotorSpeed));
+/*B Button */ new JoystickButton(m_driverController, 2).whileTrue(new RetreatEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.retreatMotorSpeed));
 
 
 
@@ -159,7 +170,7 @@ new JoystickButton(m_driverController, 7).whileTrue(new ClimbCmd(climberSubsyste
 /*elevator up slow */      //new JoystickButton(m_operatorController, 3).whileTrue(new ElevatorUpCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeedSlow));
     //}
     // reef level 1
-/*R1 */    new JoystickButton(m_operatorController, 6).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorSlowSpeed));
+/*R1 */    new JoystickButton(m_operatorController, 6).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.scoreMotorSlowSpeed));
 //else if (elevatorSubsystem.getElevatorEncoderValue() >= 1.3 && m_operatorController.getRawButton(6)){
       //new ElevatorUpCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeed);
     //} else{
@@ -169,8 +180,8 @@ new JoystickButton(m_driverController, 7).whileTrue(new ClimbCmd(climberSubsyste
 /*Y Button*/  //new JoystickButton(m_operatorController, 4).whileTrue(new ElevatorUpCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeedFast));
 /*A Button */    //new JoystickButton(m_operatorController, 2).whileTrue(new ElevatorDownCmd(elevatorSubsystem, -Constants.DriveConstants.elevatorMotorSpeedSlow));
     // Climber Controls
-/*Start Button*/    new JoystickButton(m_operatorController, 10).whileTrue(new ClimbCmd(climberSubsystem, Constants.DriveConstants.climberMotorSpeed));
-/*Back Button */    new JoystickButton(m_operatorController, 9).whileTrue(new ResetClimberCmd(climberSubsystem, -Constants.DriveConstants.resetClimberMotorSpeed));
+/*Start Button*/    new JoystickButton(m_operatorController, 10).whileTrue(new ClimbCmd(climberSubsystem, -Constants.DriveConstants.climberMotorSpeed));
+/*Back Button */    new JoystickButton(m_operatorController, 9).whileTrue(new ResetClimberCmd(climberSubsystem, Constants.DriveConstants.resetClimberMotorSpeed));
     // Funnel Controls
 /*L2 */    new JoystickButton(m_operatorController, 7).whileTrue(new RaiseFunnelCmd(funnelSubsystem, Constants.DriveConstants.funnelMotorSpeed));
 
@@ -179,13 +190,13 @@ new JoystickButton(m_driverController, 7).whileTrue(new ClimbCmd(climberSubsyste
     // Score Controls
 /*L3 */    new JoystickButton(m_operatorController, 11).whileTrue(new ScoreCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorFullSpeed));
 /*R3 */    new JoystickButton(m_operatorController, 12).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorSlowSpeed));
-/*L1 */    new JoystickButton(m_operatorController, 5).whileTrue(new RetreatEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.retreatMotorSpeed));
+/*L1 */    new JoystickButton(m_operatorController, 5).whileTrue(new RetreatEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.retreatMotorSpeed));
 
 new JoystickButton(m_operatorController, 8).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.GL))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
 new JoystickButton(m_operatorController, 1).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L1))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-new JoystickButton(m_operatorController, 4).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L2))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+//new JoystickButton(m_operatorController, 4).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L2))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
 new JoystickButton(m_operatorController, 2).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L3))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-new JoystickButton(m_operatorController, 3).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L4))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+//new JoystickButton(m_operatorController, 3).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L4))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
 
       }
 
@@ -198,9 +209,11 @@ new JoystickButton(m_operatorController, 3).toggleOnTrue(new InstantCommand(() -
     return new SequentialCommandGroup(
         new InstantCommand(() -> m_robotDrive.resetPose(new Pose2d()), m_robotDrive),
         new WaitCommand(1),
-        new RunCommand(() -> m_robotDrive.drive(-1, 0, 0, true, 1), m_robotDrive).withTimeout(3),
+        new RunCommand(() -> m_robotDrive.drive(-1, 0, 0, true, 1), m_robotDrive).withTimeout(2),
         new WaitCommand(2),
         new InstantCommand(() -> m_robotDrive.drive(0, 0, 0, true, 1), m_robotDrive));
+
+
     // Create config for trajectory
     //TrajectoryConfig config = new TrajectoryConfig(
     //    AutoConstants.kMaxSpeedMetersPerSecond,
@@ -224,7 +237,7 @@ new JoystickButton(m_operatorController, 3).toggleOnTrue(new InstantCommand(() -
 
     //SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(
     //    exampleTrajectory,
-     //   m_robotDrive::getPose, // Functional interface to feed supplier
+    //    m_robotDrive::getPose, // Functional interface to feed supplier
     //    DriveConstants.kDriveKinematics,
 
         // Position controllers
@@ -238,7 +251,7 @@ new JoystickButton(m_operatorController, 3).toggleOnTrue(new InstantCommand(() -
     //m_robotDrive.resetPose(exampleTrajectory.getInitialPose());
 
     // Run path following command, then stop at the end.
-    //return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false));
+    //return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, 1));
 
   }
 

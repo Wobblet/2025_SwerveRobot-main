@@ -1,6 +1,22 @@
 package frc.robot;
 
 import com.revrobotics.spark.config.SparkMaxConfig;
+
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.Filesystem;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.RobotConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
@@ -53,4 +69,80 @@ public final class Configs {
                     .positionWrappingInputRange(0, turningFactor);
         }
     }
+
+    /**
+   * Load the robot config from the shared settings file created by the GUI
+   *
+   * @return RobotConfig matching the robot settings in the GUI
+   * @throws IOException if an I/O error occurs
+   * @throws ParseException if a JSON parsing error occurs
+   */
+  public static RobotConfig fromGUISettings() throws IOException, ParseException {
+    BufferedReader br =
+        new BufferedReader(
+            new FileReader(new File(Filesystem.getDeployDirectory(), "C:////Users////hatchetrobotics////Desktop////2025_SwerveRobot-main////2025_SwerveRobot-main////src////main////deploy////pathplanner////settings.json")));
+
+    StringBuilder fileContentBuilder = new StringBuilder();
+    String line;
+    while ((line = br.readLine()) != null) {
+      fileContentBuilder.append(line);
+    }
+    br.close();
+
+    String fileContent = fileContentBuilder.toString();
+    JSONObject json = (JSONObject) new JSONParser().parse(fileContent);
+
+    boolean isHolonomic = true;
+    double massKG = ((Number) json.get("robotMass")).doubleValue();
+    double MOI = ((Number) json.get("robotMOI")).doubleValue();
+    double wheelRadius = ((Number) json.get("driveWheelRadius")).doubleValue();
+    double gearing = ((Number) json.get("driveGearing")).doubleValue();
+    double maxDriveSpeed = ((Number) json.get("maxDriveSpeed")).doubleValue();
+    double wheelCOF = ((Number) json.get("wheelCOF")).doubleValue();
+    String driveMotor = (String) json.get("driveMotorType");
+    double driveCurrentLimit = ((Number) json.get("driveCurrentLimit")).doubleValue();
+
+    int numMotors = isHolonomic ? 1 : 2;
+    DCMotor gearbox =
+        switch (driveMotor) {
+          case "krakenX60" -> DCMotor.getKrakenX60(numMotors);
+          case "krakenX60FOC" -> DCMotor.getKrakenX60Foc(numMotors);
+          case "falcon500" -> DCMotor.getFalcon500(numMotors);
+          case "falcon500FOC" -> DCMotor.getFalcon500Foc(numMotors);
+          case "vortex" -> DCMotor.getNeoVortex(numMotors);
+          case "NEO" -> DCMotor.getNEO(numMotors);
+          case "CIM" -> DCMotor.getCIM(numMotors);
+          case "miniCIM" -> DCMotor.getMiniCIM(numMotors);
+          default -> throw new IllegalArgumentException("Invalid motor type: " + driveMotor);
+        };
+    gearbox = gearbox.withReduction(gearing);
+
+    ModuleConfig moduleConfig =
+        new ModuleConfig(
+            wheelRadius, maxDriveSpeed, wheelCOF, gearbox, driveCurrentLimit, numMotors);
+
+    if (isHolonomic) {
+      Translation2d[] moduleOffsets =
+          new Translation2d[] {
+            new Translation2d(
+                ((Number) json.get("flModuleX")).doubleValue(),
+                ((Number) json.get("flModuleY")).doubleValue()),
+            new Translation2d(
+                ((Number) json.get("frModuleX")).doubleValue(),
+                ((Number) json.get("frModuleY")).doubleValue()),
+            new Translation2d(
+                ((Number) json.get("blModuleX")).doubleValue(),
+                ((Number) json.get("blModuleY")).doubleValue()),
+            new Translation2d(
+                ((Number) json.get("brModuleX")).doubleValue(),
+                ((Number) json.get("brModuleY")).doubleValue())
+          };
+
+      return new RobotConfig(massKG, MOI, moduleConfig, moduleOffsets);
+    } else {
+      double trackwidth = ((Number) json.get("robotTrackwidth")).doubleValue();
+
+      return new RobotConfig(massKG, MOI, moduleConfig, trackwidth);
+    }
+  }
 }

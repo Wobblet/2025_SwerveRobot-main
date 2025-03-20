@@ -33,10 +33,10 @@ public class ElevatorSubsystem extends SubsystemBase {
     
         public enum ElevatorPositions {
             GL(0),
-            L1(43),
-            L2(200.9),
-            L3(319.47),
-            L4(515);
+            L1(67),
+            L2(0),
+            L3(100),
+            L4(0);
     
             private final double value;
     
@@ -56,16 +56,20 @@ public class ElevatorSubsystem extends SubsystemBase {
             m_ElevatorPID = elevatorMotor1.getClosedLoopController();
             elevatorMotorConfig = new SparkMaxConfig();
     
+            // Change P(Elevator Speed) till it doesn't skip
+            // p = Speed 
+            // i = Correction
+            // d = Dampening
             elevatorMotorConfig.closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                .p(.5)
+                .p(.025)
                 .i(0)
                 .d(0)
                 .outputRange(-1, 1);
             elevatorMotorConfig
                 .inverted(true)
                 .smartCurrentLimit(40)
-                .idleMode(IdleMode.kBrake);
+                .idleMode(IdleMode.kCoast);
             elevatorMotor1.configure(elevatorMotorConfig, com.revrobotics.spark.SparkBase.ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
             elevatorRelative.setPosition(0);

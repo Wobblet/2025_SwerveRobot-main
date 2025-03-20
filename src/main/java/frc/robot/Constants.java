@@ -76,7 +76,7 @@ public final class Constants {
 
     public static RobotConfig config;{
       try{
-        config = RobotConfig.fromGUISettings();
+        config = Configs.fromGUISettings();
       } catch (Exception e) {
         e.printStackTrace();
       }
