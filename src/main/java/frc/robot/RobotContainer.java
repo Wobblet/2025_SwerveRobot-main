@@ -6,25 +6,11 @@ package frc.robot;
 //import com.pathplanner.lib.auto.AutoBuilder;
 //import com.pathplanner.lib.commands.PathPlannerAuto;
 
-import java.util.List;
-
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 //import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller.Button;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 //import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 //import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 //import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -33,14 +19,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.ClimbCmd;
-import frc.robot.commands.ElevatorResetCmd;
 import frc.robot.commands.RaiseFunnelCmd;
 import frc.robot.commands.ResetClimberCmd;
 import frc.robot.commands.ResetFunnelCmd;
@@ -192,11 +175,11 @@ new JoystickButton(m_driverController, 7).whileTrue(new ClimbCmd(climberSubsyste
 /*R3 */    new JoystickButton(m_operatorController, 12).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorSlowSpeed));
 /*L1 */    new JoystickButton(m_operatorController, 5).whileTrue(new RetreatEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.retreatMotorSpeed));
 
-new JoystickButton(m_operatorController, 8).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.GL))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-new JoystickButton(m_operatorController, 1).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L1))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-//new JoystickButton(m_operatorController, 4).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L2))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-new JoystickButton(m_operatorController, 2).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L3))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-//new JoystickButton(m_operatorController, 3).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L4))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+/*R2 Button */ new JoystickButton(m_operatorController, 8).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.GL))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+/*X Button */ new JoystickButton(m_operatorController, 1).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.FL)));//.toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+/*Y Button */ new JoystickButton(m_operatorController, 4).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L2)));//.toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+/*A Button */ new JoystickButton(m_operatorController, 2).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L3)));//.toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+/*B Button */ new JoystickButton(m_operatorController, 3).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L4)));//.toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
 
       }
 
@@ -213,46 +196,46 @@ new JoystickButton(m_operatorController, 2).toggleOnTrue(new InstantCommand(() -
         new WaitCommand(2),
         new InstantCommand(() -> m_robotDrive.drive(0, 0, 0, true, 1), m_robotDrive));
 
-
+    /*
     // Create config for trajectory
-    //TrajectoryConfig config = new TrajectoryConfig(
-    //    AutoConstants.kMaxSpeedMetersPerSecond,
-    //    AutoConstants.kMaxAccelerationMetersPerSecondSquared)
+    TrajectoryConfig config = new TrajectoryConfig(
+        AutoConstants.kMaxSpeedMetersPerSecond,
+        AutoConstants.kMaxAccelerationMetersPerSecondSquared)
         // Add kinematics to ensure max speed is actually obeyed
-    //    .setKinematics(DriveConstants.kDriveKinematics);
+        .setKinematics(DriveConstants.kDriveKinematics);
 
     // An example trajectory to follow. All units in meters.
-    //Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
+    Trajectory exampleTrajectory = TrajectoryGenerator.generateTrajectory(
         // Start at the origin facing the +X direction
-    //    new Pose2d(0, 0, new Rotation2d(0)),
+        new Pose2d(0, 0, new Rotation2d(0)),
         // Pass through these two interior waypoints, making an 's' curve path
-    //    List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
+        List.of(new Translation2d(1, 1), new Translation2d(2, -1)),
         // End 3 meters straight ahead of where we started, facing forward
-    //   new Pose2d(3, 0, new Rotation2d(0)),
-    //    config);
+       new Pose2d(3, 0, new Rotation2d(0)),
+        config);
 
-    //var thetaController = new ProfiledPIDController(
-    //    AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
-    //thetaController.enableContinuousInput(-Math.PI, Math.PI);
+    var thetaController = new ProfiledPIDController(
+        AutoConstants.kPThetaController, 0, 0, AutoConstants.kThetaControllerConstraints);
+    thetaController.enableContinuousInput(-Math.PI, Math.PI);
 
-    //SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(
-    //    exampleTrajectory,
-    //    m_robotDrive::getPose, // Functional interface to feed supplier
-    //    DriveConstants.kDriveKinematics,
+    SwerveControllerCommand swerveControllerCommand = new SwerveControllerCommand(
+        exampleTrajectory,
+        m_robotDrive::getPose, // Functional interface to feed supplier
+        DriveConstants.kDriveKinematics,
 
         // Position controllers
-    //    new PIDController(AutoConstants.kPXController, 0, 0),
-    //    new PIDController(AutoConstants.kPYController, 0, 0),
-    //    thetaController,
-    //    m_robotDrive::setModuleStates,
-    //    m_robotDrive);
+        new PIDController(AutoConstants.kPXController, 0, 0),
+        new PIDController(AutoConstants.kPYController, 0, 0),
+        thetaController,
+        m_robotDrive::setModuleStates,
+        m_robotDrive);
 
     // Reset odometry to the starting pose of the trajectory.
-    //m_robotDrive.resetPose(exampleTrajectory.getInitialPose());
+    m_robotDrive.resetPose(exampleTrajectory.getInitialPose());
 
     // Run path following command, then stop at the end.
-    //return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, 1));
-
+    return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, 1));
+    */
   }
 
   //public Command getAutonomousPathCommand() {

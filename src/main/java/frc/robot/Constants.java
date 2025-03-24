@@ -34,6 +34,8 @@ public final class Constants {
     // Elevator Constants
     public static final double kStartPose = -44.4;
 
+    // Distance Sensor Constants
+    public static final double endEffectorDist = 0.08;
 
     // Chassis configuration
     public static final double kTrackWidth = Units.inchesToMeters(26.5);
@@ -74,13 +76,7 @@ public final class Constants {
 
     public static final boolean kGyroReversed = false;
 
-    public static RobotConfig config;{
-      try{
-        config = Configs.fromGUISettings();
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
+    public static RobotConfig config = pathConfig.fromGUISettings();
   }
 
   public static final class ModuleConstants {

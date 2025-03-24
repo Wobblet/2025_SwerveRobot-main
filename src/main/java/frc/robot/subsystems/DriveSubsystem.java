@@ -27,7 +27,9 @@ import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Configs;
 import frc.robot.Constants;
+import frc.robot.pathConfig;
 import frc.robot.Constants.DriveConstants;
 
 public class DriveSubsystem extends SubsystemBase {
@@ -55,6 +57,8 @@ public class DriveSubsystem extends SubsystemBase {
   // The gyro sensor
   private final ADIS16470_IMU m_gyro = new ADIS16470_IMU();
 
+  //private pathConfig pathConfig = new pathConfig();
+
   // Odometry class for tracking robot pose
   SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
       DriveConstants.kDriveKinematics,
@@ -68,6 +72,14 @@ public class DriveSubsystem extends SubsystemBase {
 
   SwerveDriveKinematics m_kinematics;
 
+  public static RobotConfig config;{
+    try{
+        config = pathConfig.fromGUISettings();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
   /** Creates a new DriveSubsystem. */
   public DriveSubsystem() {
     // Usage reporting for MAXSwerve template
@@ -79,7 +91,6 @@ public class DriveSubsystem extends SubsystemBase {
             new Translation2d(Units.inchesToMeters(-12.5), Units.inchesToMeters(12.5)), // Back Left
             new Translation2d(Units.inchesToMeters(-12.5), Units.inchesToMeters(-12.5))); // Back Right
 
-    //RobotConfig config = Constants.DriveConstants.config;
     
     // Configure AutoBuilder last
     /* 
@@ -107,7 +118,6 @@ public class DriveSubsystem extends SubsystemBase {
       this // Reference to this subsystem to set requirements
     );
     */
-    
   }
 
   @Override

@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.commands.SetEndEffectorCmd;
 import frc.robot.subsystems.EndEffectorSubsystem;
 
 
@@ -24,6 +26,7 @@ public class Robot extends TimedRobot {
 
   private final RobotContainer m_robotContainer;
   private Rev2mDistanceSensor distOnboard;
+  private pathConfig pathConfig;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -34,6 +37,7 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
     distOnboard = new Rev2mDistanceSensor(Port.kOnboard);
+    pathConfig = new pathConfig();
   }
 
   /**
@@ -106,6 +110,13 @@ public class Robot extends TimedRobot {
     if(distOnboard.isRangeValid()) {
       SmartDashboard.putNumber("Range Onboard", distOnboard.getRange());
       SmartDashboard.putNumber("Timestamp Onboard", distOnboard.getTimestamp());
+    }
+
+    if(distOnboard.getRange() >= Constants.DriveConstants.endEffectorDist){
+      m_robotContainer.endEffectorSubsystem.setEndEffector(-Constants.DriveConstants.scoreMotorSlowSpeed);
+    }
+    else{
+      m_robotContainer.endEffectorSubsystem.setEndEffector(0);
     }
   }
 
