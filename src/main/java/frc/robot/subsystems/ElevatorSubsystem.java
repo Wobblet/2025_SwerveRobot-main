@@ -32,12 +32,12 @@ public class ElevatorSubsystem extends SubsystemBase {
         private SparkMaxConfig elevatorMotorConfig;
     
         public enum ElevatorPositions {
-            GL(0),
-            FL(20.5),
-            L1(58),
-            L2(98),
-            L3(158),
-            L4(248);
+            GL(1),
+            FL(21.5),
+            L1(59),
+            L2(99),
+            L3(159),
+            L4(249);
     
             private final double value;
     

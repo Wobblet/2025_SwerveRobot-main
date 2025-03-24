@@ -4,9 +4,13 @@
 
 package frc.robot;
 
+import java.util.jar.Attributes.Name;
+
 import com.revrobotics.Rev2mDistanceSensor;
 import com.revrobotics.Rev2mDistanceSensor.Port;
 
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -38,6 +42,8 @@ public class Robot extends TimedRobot {
     m_robotContainer = new RobotContainer();
     distOnboard = new Rev2mDistanceSensor(Port.kOnboard);
     pathConfig = new pathConfig();
+    UsbCamera usbCamera = CameraServer.startAutomaticCapture();
+    usbCamera.setResolution(640, 480);
   }
 
   /**

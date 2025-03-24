@@ -199,10 +199,14 @@ public class DriveSubsystem extends SubsystemBase {
       xSpeedDelivered = xSpeed * (DriveConstants.kMaxSpeedMetersPerSecond*.5);
       ySpeedDelivered = ySpeed * (DriveConstants.kMaxSpeedMetersPerSecond*.5);
       rotDelivered = rot * (DriveConstants.kMaxAngularSpeed*.5);
-    }else{
+    }else if(speedMode == 2){
       xSpeedDelivered = xSpeed * (DriveConstants.kMaxSpeedMetersPerSecond*.25);
       ySpeedDelivered = ySpeed * (DriveConstants.kMaxSpeedMetersPerSecond*.25);
       rotDelivered = rot * (DriveConstants.kMaxAngularSpeed*.25);
+    }else{
+      xSpeedDelivered = xSpeed * DriveConstants.kMaxSpeedMetersPerSecond;
+      ySpeedDelivered = ySpeed * DriveConstants.kMaxSpeedMetersPerSecond;
+      rotDelivered = rot * DriveConstants.kMaxAngularSpeed;
     }
 
 
