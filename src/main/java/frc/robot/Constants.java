@@ -37,6 +37,9 @@ public final class Constants {
     // Distance Sensor Constants
     public static final double endEffectorDist = 0.08;
 
+    // Elevator Encoder Value
+    public static int h = 0;
+
     // Chassis configuration
     public static final double kTrackWidth = Units.inchesToMeters(26.5);
     // Distance between centers of right and left wheels on robot

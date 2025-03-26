@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.POVButton;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.ClimbCmd;
@@ -30,6 +31,7 @@ import frc.robot.commands.ResetFunnelCmd;
 import frc.robot.commands.RetreatEndEffectorCmd;
 import frc.robot.commands.ScoreCmd;
 import frc.robot.commands.SetEndEffectorCmd;
+import frc.robot.commands.elevatorEncoderCmd;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -52,6 +54,7 @@ public class RobotContainer {
   private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
   private final FunnelSubsystem funnelSubsystem = new FunnelSubsystem();
   public final EndEffectorSubsystem endEffectorSubsystem = new EndEffectorSubsystem();
+  
 
   public final Joystick m_operatorController = new Joystick(OIConstants.kOperatorControllerPort);
 
@@ -180,6 +183,9 @@ new JoystickButton(m_driverController, 7).whileTrue(new ClimbCmd(climberSubsyste
 /*Y Button */ new JoystickButton(m_operatorController, 4).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L2)));//.toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
 /*A Button */ new JoystickButton(m_operatorController, 2).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L3)));//.toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
 /*B Button */ new JoystickButton(m_operatorController, 3).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L4)));//.toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+
+new POVButton(m_operatorController, 0).whileTrue(new elevatorEncoderCmd(elevatorSubsystem, 1)).whileFalse(new elevatorEncoderCmd(elevatorSubsystem, 0));
+new POVButton(m_operatorController, 180).whileTrue(new elevatorEncoderCmd(elevatorSubsystem, 2)).whileFalse(new elevatorEncoderCmd(elevatorSubsystem, 0));
 
       }
 
