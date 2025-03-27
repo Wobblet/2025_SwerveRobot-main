@@ -101,18 +101,6 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    if (m_robotContainer.m_driverController.getRawAxis(3) > .3){
-      m_robotContainer.endEffectorSubsystem.setEndEffector(-Constants.DriveConstants.scoreMotorSlowSpeed);
-    } else {
-      m_robotContainer.endEffectorSubsystem.setEndEffector(0);
-    }
-
-    if (m_robotContainer.m_driverController.getRawAxis(2) > .3){
-      m_robotContainer.endEffectorSubsystem.setEndEffector(-Constants.DriveConstants.scoreMotorSlowSpeedDrive);
-    } else {
-      m_robotContainer.endEffectorSubsystem.setEndEffector(0);
-    }
-
     if(distOnboard.isRangeValid()) {
       SmartDashboard.putNumber("Range Onboard", distOnboard.getRange());
       SmartDashboard.putNumber("Timestamp Onboard", distOnboard.getTimestamp());

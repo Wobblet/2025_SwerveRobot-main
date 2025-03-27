@@ -3,27 +3,43 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot;
-//import com.pathplanner.lib.auto.AutoBuilder;
-//import com.pathplanner.lib.commands.PathPlannerAuto;
+import java.util.List;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 //import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller.Button;
-//import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
-//import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-//import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+// import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
+// import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+// import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
+import frc.robot.commands.ChangeSpeedModeCmd;
 import frc.robot.commands.ClimbCmd;
 import frc.robot.commands.RaiseFunnelCmd;
 import frc.robot.commands.ResetClimberCmd;
@@ -47,7 +63,7 @@ import frc.robot.subsystems.FunnelSubsystem;
  */
 public class RobotContainer {
   // The robot's subsystems
-  //private final SendableChooser<Command> autoChooser;
+  private final SendableChooser<Command> autoChooser;
 
   private final ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
   private final DriveSubsystem m_robotDrive = new DriveSubsystem();
@@ -70,9 +86,10 @@ public class RobotContainer {
 
     configureOperatorBinding();
 
-    //autoChooser = AutoBuilder.buildAutoChooser();
+    //NamedCommands.registerCommand("[Pathplanner Name]", [Command to run]);
+    autoChooser = AutoBuilder.buildAutoChooser();
 
-    //SmartDashboard.putData("Auto Chooser", autoChooser);
+    SmartDashboard.putData("Auto Chooser", autoChooser);
 
     // Configure default commands
     m_robotDrive.setDefaultCommand(
@@ -111,18 +128,14 @@ public class RobotContainer {
             m_robotDrive));
     // slowest mode
 /*L1 */    new JoystickButton(m_driverController, 5)
-        .toggleOnTrue(new RunCommand(
-            () -> m_robotDrive.changeModeValue(1),
-            m_robotDrive));
+        .whileTrue(new ChangeSpeedModeCmd(m_robotDrive, 1));
     // slow mode
 /*R1 */    new JoystickButton(m_driverController, 6)
-        .whileTrue(new RunCommand(
-            () -> m_robotDrive.changeModeValue(2),
-            m_robotDrive));
+        .whileTrue(new ChangeSpeedModeCmd(m_robotDrive, 2));
     // Climber Controls  
 /*Start */    new JoystickButton(m_driverController, 8).whileTrue(new ClimbCmd(climberSubsystem, -Constants.DriveConstants.climberMotorSpeed));
-new JoystickButton(m_driverController, 7).whileTrue(new ClimbCmd(climberSubsystem, Constants.DriveConstants.climberMotorSpeed));
-/*Back */    //new JoystickButton(m_driverController, 7).whileTrue(new ResetPoseCmd(m_robotDrive));
+//new JoystickButton(m_driverController, 7).whileTrue(new ClimbCmd(climberSubsystem, Constants.DriveConstants.climberMotorSpeed));
+/*Back */ new JoystickButton(m_driverController, 7).whileTrue(new InstantCommand(m_robotDrive::zeroHeading, m_robotDrive));
     // Funnel Controls
 /*Y Button */    new JoystickButton(m_driverController, 4).whileTrue(new RaiseFunnelCmd(funnelSubsystem, Constants.DriveConstants.funnelMotorSpeed));
 /*A Button */    new JoystickButton(m_driverController, 1).whileTrue(new ResetFunnelCmd(funnelSubsystem, Constants.DriveConstants.resetFunnelMotorSpeed));
@@ -132,8 +145,8 @@ new JoystickButton(m_driverController, 7).whileTrue(new ClimbCmd(climberSubsyste
 
 /*B Button */ new JoystickButton(m_driverController, 2).whileTrue(new RetreatEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.retreatMotorSpeed));
 
-
-
+new Trigger(() -> m_driverController.getRawAxis(3) > .1).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -DriveConstants.scoreMotorFullSpeed));
+new Trigger(() -> m_driverController.getRawAxis(2) > .1).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -DriveConstants.scoreMotorSlowSpeed));
 
   }
 
@@ -178,14 +191,14 @@ new JoystickButton(m_driverController, 7).whileTrue(new ClimbCmd(climberSubsyste
 /*R3 */    new JoystickButton(m_operatorController, 12).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorSlowSpeed));
 /*L1 */    new JoystickButton(m_operatorController, 5).whileTrue(new RetreatEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.retreatMotorSpeed));
 
-/*R2 Button */ new JoystickButton(m_operatorController, 8).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.GL))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-/*X Button */ new JoystickButton(m_operatorController, 1).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.FL)));//.toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-/*Y Button */ new JoystickButton(m_operatorController, 4).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L2)));//.toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-/*A Button */ new JoystickButton(m_operatorController, 2).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L3)));//.toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-/*B Button */ new JoystickButton(m_operatorController, 3).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L4)));//.toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+/*R2 Button */ new JoystickButton(m_operatorController, 8).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.GL))).toggleOnTrue(new elevatorEncoderCmd(elevatorSubsystem, 0)).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+/*X Button */ new JoystickButton(m_operatorController, 1).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.FL))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+/*Y Button */ new JoystickButton(m_operatorController, 4).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L2))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+/*A Button */ new JoystickButton(m_operatorController, 2).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L3))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+/*B Button */ new JoystickButton(m_operatorController, 3).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L4))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
 
-new POVButton(m_operatorController, 0).whileTrue(new elevatorEncoderCmd(elevatorSubsystem, 1)).whileFalse(new elevatorEncoderCmd(elevatorSubsystem, 0));
-new POVButton(m_operatorController, 180).whileTrue(new elevatorEncoderCmd(elevatorSubsystem, 2)).whileFalse(new elevatorEncoderCmd(elevatorSubsystem, 0));
+new POVButton(m_operatorController, 0).whileTrue(new elevatorEncoderCmd(elevatorSubsystem, 1));
+new POVButton(m_operatorController, 180).whileTrue(new elevatorEncoderCmd(elevatorSubsystem, 2));
 
       }
 
@@ -195,14 +208,14 @@ new POVButton(m_operatorController, 180).whileTrue(new elevatorEncoderCmd(elevat
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return new SequentialCommandGroup(
-        new InstantCommand(() -> m_robotDrive.resetPose(new Pose2d()), m_robotDrive),
-        new WaitCommand(1),
-        new RunCommand(() -> m_robotDrive.drive(-1, 0, 0, true, 1), m_robotDrive).withTimeout(2),
-        new WaitCommand(2),
-        new InstantCommand(() -> m_robotDrive.drive(0, 0, 0, true, 1), m_robotDrive));
+    //return new SequentialCommandGroup(
+    //    new InstantCommand(() -> m_robotDrive.resetPose(new Pose2d()), m_robotDrive),
+    //    new WaitCommand(1),
+    //    new RunCommand(() -> m_robotDrive.drive(-1, 0, 0, true, 1), m_robotDrive).withTimeout(2),
+    //    new WaitCommand(2),
+    //    new InstantCommand(() -> m_robotDrive.drive(0, 0, 0, true, 1), m_robotDrive));
 
-    /*
+    
     // Create config for trajectory
     TrajectoryConfig config = new TrajectoryConfig(
         AutoConstants.kMaxSpeedMetersPerSecond,
@@ -241,15 +254,15 @@ new POVButton(m_operatorController, 180).whileTrue(new elevatorEncoderCmd(elevat
 
     // Run path following command, then stop at the end.
     return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, 1));
-    */
+    
   }
 
-  //public Command getAutonomousPathCommand() {
+  public Command getAutonomousPathCommand() {
     // This method loads the auto when it is called, however, it is recommended
     // to first load your paths/autos when code starts, then return the
     // pre-loaded auto/path\
     
     //return new PathPlannerAuto("New Auto");
-    //return autoChooser.getSelected();
-  //}
+    return autoChooser.getSelected();
+  }
 }

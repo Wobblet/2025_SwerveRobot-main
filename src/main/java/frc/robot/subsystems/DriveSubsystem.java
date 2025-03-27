@@ -89,6 +89,8 @@ public class DriveSubsystem extends SubsystemBase {
     // Usage reporting for MAXSwerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_MaxSwerve);
 
+    zeroHeading();
+
     m_kinematics = new SwerveDriveKinematics(
             new Translation2d(Units.inchesToMeters(12.5), Units.inchesToMeters(12.5)), // Front Left
             new Translation2d(Units.inchesToMeters(12.5), Units.inchesToMeters(-12.5)), // Front Right
@@ -97,7 +99,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     
     // Configure AutoBuilder last
-    /* 
+    
     AutoBuilder.configure(
       this::getPose, // Robot pose supplier
       this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
@@ -121,7 +123,7 @@ public class DriveSubsystem extends SubsystemBase {
      },
       this // Reference to this subsystem to set requirements
     );
-    */
+    
   }
 
   @Override
@@ -137,6 +139,8 @@ public class DriveSubsystem extends SubsystemBase {
         });
 
     SmartDashboard.putNumber("Swerve Gyro Angle", m_Pigeon2.getYaw().getValueAsDouble());
+
+    SmartDashboard.putNumber("Elevator Offset", DriveConstants.h);
   }
 
   /**

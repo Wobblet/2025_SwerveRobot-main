@@ -5,36 +5,34 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.ElevatorSubsystem;
-import frc.robot.subsystems.ElevatorSubsystem.ElevatorPositions;
+import frc.robot.subsystems.DriveSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class elevatorEncoderCmd extends Command {
-  private final ElevatorSubsystem elevatorSubsystem;
-  private final int value;
+public class ChangeSpeedModeCmd extends Command {
+  private DriveSubsystem driveSubsystem;
+  private int speedmode;
 
-  /** Creates a new elevatorEncoderCmd. */
-  public elevatorEncoderCmd(ElevatorSubsystem elevatorSubsystem, int value) {
+  /** Creates a new ChangeSpeedModeCmd. */
+  public ChangeSpeedModeCmd(DriveSubsystem driveSubsystem, int speedMode) {
     // Use addRequirements() here to declare subsystem dependencies.
-    this.elevatorSubsystem = elevatorSubsystem;
-    this.value = value;
+    this.driveSubsystem = driveSubsystem;
+    this.speedmode = speedMode;
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    elevatorSubsystem.setH(value);
+    driveSubsystem.changeModeValue(speedmode);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {
-  }
+  public void execute() {}
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    elevatorSubsystem.setH(0);
+    driveSubsystem.changeModeValue(0);
   }
 
   // Returns true when the command should end.
