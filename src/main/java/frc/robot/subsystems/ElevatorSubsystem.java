@@ -33,11 +33,11 @@ public class ElevatorSubsystem extends SubsystemBase {
     
         public enum ElevatorPositions {
             GL(0),
-            FL(20),
+            FL(21),
             L1(59),
-            L2(99),
-            L3(159),
-            L4(249);
+            L2(104),
+            L3(163.7),
+            L4(260);
     
             private final double value;
             
@@ -56,9 +56,9 @@ public class ElevatorSubsystem extends SubsystemBase {
 
         public void setH(int value){
             if (value == 1){
-                DriveConstants.h += 1;
+                DriveConstants.h += .5;
             } else if (value == 2){
-                DriveConstants.h -= 1;
+                DriveConstants.h -= .5;
             }
         }
             

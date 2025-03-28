@@ -61,6 +61,10 @@ public class MAXSwerveModule {
     m_drivingEncoder.setPosition(0);
   }
 
+  public double getRelativeEncoder(){
+    return m_drivingEncoder.getVelocity();
+  }
+
   /**
    * Returns the current state of the module.
    *

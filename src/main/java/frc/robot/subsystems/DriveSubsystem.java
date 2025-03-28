@@ -141,6 +141,11 @@ public class DriveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Swerve Gyro Angle", m_Pigeon2.getYaw().getValueAsDouble());
 
     SmartDashboard.putNumber("Elevator Offset", DriveConstants.h);
+
+    SmartDashboard.putNumber("fRightDrive", m_frontRight.getRelativeEncoder());
+    SmartDashboard.putNumber("fLeftDrive", m_frontLeft.getRelativeEncoder());
+    SmartDashboard.putNumber("bRightDrive", m_rearRight.getRelativeEncoder());
+    SmartDashboard.putNumber("bLeftDrive", m_rearLeft.getRelativeEncoder());
   }
 
   /**

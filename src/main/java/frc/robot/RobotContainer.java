@@ -8,35 +8,18 @@ import java.util.List;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
-
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.Trajectory;
-import edu.wpi.first.math.trajectory.TrajectoryConfig;
-import edu.wpi.first.math.trajectory.TrajectoryGenerator;
-//import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller.Button;
-// import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
-// import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-// import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.SwerveControllerCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.ChangeSpeedModeCmd;
@@ -65,148 +48,142 @@ public class RobotContainer {
   // The robot's subsystems
   private final SendableChooser<Command> autoChooser;
 
-  private final ElevatorSubsystem elevatorSubsystem = new ElevatorSubsystem();
-  private final DriveSubsystem m_robotDrive = new DriveSubsystem();
-  private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
-  private final FunnelSubsystem funnelSubsystem = new FunnelSubsystem();
-  public final EndEffectorSubsystem endEffectorSubsystem = new EndEffectorSubsystem();
-  
+  private final ElevatorSubsystem elevatorSubsystem;
+  private final DriveSubsystem m_robotDrive;
+  private final ClimberSubsystem climberSubsystem;
+  private final FunnelSubsystem funnelSubsystem;
+  public final EndEffectorSubsystem endEffectorSubsystem;
 
-  public final Joystick m_operatorController = new Joystick(OIConstants.kOperatorControllerPort);
+  // The operator's controller
+  public final Joystick m_operatorController;
 
   // The driver's controller
-  public final XboxController m_driverController = new XboxController(OIConstants.kDriverControllerPort);
+  public final XboxController m_driverController;
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
-  public RobotContainer() {
-    // Configure the button bindings
-    configureDriverBindings();
+    public RobotContainer() {
+        // Configure the button bindings
+        elevatorSubsystem = new ElevatorSubsystem();
+        m_robotDrive = new DriveSubsystem();
+        climberSubsystem = new ClimberSubsystem();
+        funnelSubsystem = new FunnelSubsystem();
+        endEffectorSubsystem = new EndEffectorSubsystem();
 
-    configureOperatorBinding();
+        m_operatorController = new Joystick(OIConstants.kOperatorControllerPort);
+        m_driverController = new XboxController(OIConstants.kDriverControllerPort);
 
-    //NamedCommands.registerCommand("[Pathplanner Name]", [Command to run]);
-    autoChooser = AutoBuilder.buildAutoChooser();
+        // Elevator Auto Commands
+        NamedCommands.registerCommand("raiseFl", new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.FL)));
+        NamedCommands.registerCommand("raiseL2", new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L2)));
+        NamedCommands.registerCommand("raiseL3", new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L3)));
+        NamedCommands.registerCommand("raiseL4", new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L4)));
 
-    SmartDashboard.putData("Auto Chooser", autoChooser);
+        // Score Auto Command
+        NamedCommands.registerCommand("Score", new SetEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorSlowSpeed));
 
-    // Configure default commands
-    m_robotDrive.setDefaultCommand(
-        // The left stick controls translation of the robot.
-        // Turning is controlled by the X axis of the right stick.
-        new RunCommand(
-            () -> m_robotDrive.drive(
-                -MathUtil.applyDeadband(m_driverController.getLeftY(), OIConstants.kDriveDeadband),
-                MathUtil.applyDeadband(m_driverController.getLeftX(), OIConstants.kDriveDeadband),
-                -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
-                true, DriveConstants.modeValue),
-            m_robotDrive));
+        // TODO Make am Auto Adjust Command Using Distance Sensor
+        // TODO Make an Auto Align Command Using Limelight & AprilTags
 
-    //endEffectorSubsystem.setDefaultCommand(
-    //  new RunCommand(
-    //    () -> endEffectorSubsystem.triggerEndEffector(
-    //      -MathUtil.applyDeadband(m_driverController.getLeftTriggerAxis(), OIConstants.kEndEffectorDeadband),
-    //      -MathUtil.applyDeadband(m_driverController.getRightTriggerAxis(), OIConstants.kEndEffectorDeadband)
-    //    ), 
-    //    endEffectorSubsystem));
-  }
+        configureDriverBindings();
 
-  /**
-   * Use this method to define your button->command mappings. Buttons can be
-   * created by
-   * instantiating a {@link edu.wpi.first.wpilibj.GenericHID} or one of its
-   * subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then calling
-   * passing it to a
-   * {@link JoystickButton}.
-   */
-  private void configureDriverBindings() {
-/*X Button */    new JoystickButton(m_driverController, Button.kSquare.value)
-        .whileTrue(new RunCommand(
-            () -> m_robotDrive.setX(),
-            m_robotDrive));
-    // slowest mode
-/*L1 */    new JoystickButton(m_driverController, 5)
-        .whileTrue(new ChangeSpeedModeCmd(m_robotDrive, 1));
-    // slow mode
-/*R1 */    new JoystickButton(m_driverController, 6)
-        .whileTrue(new ChangeSpeedModeCmd(m_robotDrive, 2));
-    // Climber Controls  
-/*Start */    new JoystickButton(m_driverController, 8).whileTrue(new ClimbCmd(climberSubsystem, -Constants.DriveConstants.climberMotorSpeed));
-//new JoystickButton(m_driverController, 7).whileTrue(new ClimbCmd(climberSubsystem, Constants.DriveConstants.climberMotorSpeed));
-/*Back */ new JoystickButton(m_driverController, 7).whileTrue(new InstantCommand(m_robotDrive::zeroHeading, m_robotDrive));
-    // Funnel Controls
-/*Y Button */    new JoystickButton(m_driverController, 4).whileTrue(new RaiseFunnelCmd(funnelSubsystem, Constants.DriveConstants.funnelMotorSpeed));
-/*A Button */    new JoystickButton(m_driverController, 1).whileTrue(new ResetFunnelCmd(funnelSubsystem, Constants.DriveConstants.resetFunnelMotorSpeed));
-    // Score Controls
-/*L2 !Need to change to axis! */  //new JoystickButton(m_driverController, Axis.kLeftTrigger.value).whileTrue(new ScoreCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorFullSpeed));
-/*R2 !Need to change to axis!*/   //new JoystickButton(m_driverController, Axis.kRightTrigger.value).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorSlowSpeedDrive));
+        configureOperatorBinding();
 
-/*B Button */ new JoystickButton(m_driverController, 2).whileTrue(new RetreatEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.retreatMotorSpeed));
+        //NamedCommands.registerCommand("[Pathplanner Name]", [Command to run]);
+        //autoChooser = AutoBuilder.buildAutoChooser();
 
-new Trigger(() -> m_driverController.getRawAxis(3) > .1).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -DriveConstants.scoreMotorFullSpeed));
-new Trigger(() -> m_driverController.getRawAxis(2) > .1).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -DriveConstants.scoreMotorSlowSpeed));
+        // For convenience a programmer could change this when going to competition.
+        boolean isCompetition = false;
 
-  }
+        // Build an auto chooser. This will use Commands.none() as the default option.
+        // As an example, this will only show autos that start with "comp" while at
+        // competition as defined by the programmer
+        autoChooser = AutoBuilder.buildAutoChooserWithOptionsModifier(
+            (stream) -> isCompetition
+            ? stream.filter(auto -> auto.getName().startsWith("comp"))
+            : stream
+        );
 
-  private void configureOperatorBinding() {
-    // reef level 3
-    //new JoystickButton(m_operatorController, 1).whileTrue(new ElevatorUpCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeed));
-    // reef level 2 
-    //new JoystickButton(m_operatorController, 3).whileTrue(new ElevatorUpCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeed));
-    // reef level 1
-    //new JoystickButton(m_operatorController, 6).whileTrue(new ElevatorUpCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeed));
+        SmartDashboard.putData("Auto Chooser", autoChooser);
 
-    // reef level 3
-/*X Button */    //if (elevatorSubsystem.getElevatorEncoderValue() >= 2.5 && m_operatorController.getRawButton(1)){
-      //new ElevatorUpCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeed);
-/*elevator down fast */      //new JoystickButton(m_operatorController, 1).whileTrue(new ElevatorDownCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeedFast));
-    //}
-    // reef level 2
-/*B Button */    //else if (elevatorSubsystem.getElevatorEncoderValue() >= 1.8 && m_operatorController.getRawButton(3)){
-      //new ElevatorUpCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeed);
-/*elevator up slow */      //new JoystickButton(m_operatorController, 3).whileTrue(new ElevatorUpCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeedSlow));
-    //}
-    // reef level 1
-/*R1 */    new JoystickButton(m_operatorController, 6).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.scoreMotorSlowSpeed));
-//else if (elevatorSubsystem.getElevatorEncoderValue() >= 1.3 && m_operatorController.getRawButton(6)){
-      //new ElevatorUpCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeed);
-    //} else{
-     // new ElevatorUpCmd(elevatorSubsystem, 0);
-    //}
-    // Elevator Controls
-/*Y Button*/  //new JoystickButton(m_operatorController, 4).whileTrue(new ElevatorUpCmd(elevatorSubsystem, Constants.DriveConstants.elevatorMotorSpeedFast));
-/*A Button */    //new JoystickButton(m_operatorController, 2).whileTrue(new ElevatorDownCmd(elevatorSubsystem, -Constants.DriveConstants.elevatorMotorSpeedSlow));
-    // Climber Controls
-/*Start Button*/    new JoystickButton(m_operatorController, 10).whileTrue(new ClimbCmd(climberSubsystem, -Constants.DriveConstants.climberMotorSpeed));
-/*Back Button */    new JoystickButton(m_operatorController, 9).whileTrue(new ResetClimberCmd(climberSubsystem, Constants.DriveConstants.resetClimberMotorSpeed));
-    // Funnel Controls
-/*L2 */    new JoystickButton(m_operatorController, 7).whileTrue(new RaiseFunnelCmd(funnelSubsystem, Constants.DriveConstants.funnelMotorSpeed));
+        // Configure default commands
+        m_robotDrive.setDefaultCommand(
+            // The left stick controls translation of the robot.
+            // Turning is controlled by the X axis of the right stick.
+            new RunCommand(
+                () -> m_robotDrive.drive(
+                    -MathUtil.applyDeadband(m_driverController.getLeftY(), OIConstants.kDriveDeadband),
+                    MathUtil.applyDeadband(m_driverController.getLeftX(), OIConstants.kDriveDeadband),
+                    -MathUtil.applyDeadband(m_driverController.getRightX(), OIConstants.kDriveDeadband),
+                    true, DriveConstants.modeValue),
+                m_robotDrive));
+    }
 
-    // Reset Elevator
-/*R2 */    //new JoystickButton(m_operatorController, 8).whileTrue(new ElevatorResetCmd(elevatorSubsystem, 0));
-    // Score Controls
-/*L3 */    new JoystickButton(m_operatorController, 11).whileTrue(new ScoreCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorFullSpeed));
-/*R3 */    new JoystickButton(m_operatorController, 12).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorSlowSpeed));
-/*L1 */    new JoystickButton(m_operatorController, 5).whileTrue(new RetreatEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.retreatMotorSpeed));
+    /**
+     * Use this method to define your button->command mappings. Buttons can be
+     * created by
+     * instantiating a {@link edu.wpi.first.wpilibj.GenericHID} or one of its
+     * subclasses ({@link
+     * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then calling
+     * passing it to a
+     * {@link JoystickButton}.
+     */
+    private void configureDriverBindings() {
+            // Speed Mode Controls
+        /*L1 */ new JoystickButton(m_driverController, 5).whileTrue(new ChangeSpeedModeCmd(m_robotDrive, 1));
+        /*R1 */ new JoystickButton(m_driverController, 6).whileTrue(new ChangeSpeedModeCmd(m_robotDrive, 2));
+        /*X Button */ new JoystickButton(m_driverController, Button.kSquare.value).whileTrue(new RunCommand(() -> m_robotDrive.setX(), m_robotDrive));
 
-/*R2 Button */ new JoystickButton(m_operatorController, 8).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.GL))).toggleOnTrue(new elevatorEncoderCmd(elevatorSubsystem, 0)).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-/*X Button */ new JoystickButton(m_operatorController, 1).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.FL))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-/*Y Button */ new JoystickButton(m_operatorController, 4).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L2))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-/*A Button */ new JoystickButton(m_operatorController, 2).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L3))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-/*B Button */ new JoystickButton(m_operatorController, 3).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L4))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+            // Climber Controls  
+        /*Start */ new JoystickButton(m_driverController, 8).whileTrue(new ClimbCmd(climberSubsystem, -Constants.DriveConstants.climberMotorSpeed));
 
-new POVButton(m_operatorController, 0).whileTrue(new elevatorEncoderCmd(elevatorSubsystem, 1));
-new POVButton(m_operatorController, 180).whileTrue(new elevatorEncoderCmd(elevatorSubsystem, 2));
+            // Zero Heading
+        /*Back */ new JoystickButton(m_driverController, 7).whileTrue(new InstantCommand(m_robotDrive::zeroHeading, m_robotDrive));
 
-      }
+            // Funnel Controls
+        /*Y Button */ new JoystickButton(m_driverController, 4).whileTrue(new RaiseFunnelCmd(funnelSubsystem, Constants.DriveConstants.funnelMotorSpeed));
+        /*A Button */ new JoystickButton(m_driverController, 1).whileTrue(new ResetFunnelCmd(funnelSubsystem, Constants.DriveConstants.resetFunnelMotorSpeed));
+
+            // Score Controls
+        /*B Button */ new JoystickButton(m_driverController, 2).whileTrue(new RetreatEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.retreatMotorSpeed));
+        /*Right Triger*/ new Trigger(() -> m_driverController.getRawAxis(3) > .1).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -DriveConstants.scoreMotorFullSpeed));
+        /*Left Triger*/new Trigger(() -> m_driverController.getRawAxis(2) > .1).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -DriveConstants.scoreMotorSlowSpeed));
+    }
+
+    private void configureOperatorBinding() {
+        
+            // Climber Controls
+        /*Start Button*/ new JoystickButton(m_operatorController, 10).whileTrue(new ClimbCmd(climberSubsystem, -Constants.DriveConstants.climberMotorSpeed));
+        /*Back Button */ new JoystickButton(m_operatorController, 9).whileTrue(new ResetClimberCmd(climberSubsystem, Constants.DriveConstants.resetClimberMotorSpeed));
+        
+            // Funnel Controls
+        /*L2 */ new JoystickButton(m_operatorController, 7).whileTrue(new RaiseFunnelCmd(funnelSubsystem, Constants.DriveConstants.funnelMotorSpeed));
+
+            // Score Controls
+        /*L3 */ new JoystickButton(m_operatorController, 11).whileTrue(new ScoreCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorFullSpeed));
+        /*R3 */ new JoystickButton(m_operatorController, 12).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorSlowSpeed));
+        /*L1 */ new JoystickButton(m_operatorController, 5).whileTrue(new RetreatEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.retreatMotorSpeed));
+        /*R1 */ new JoystickButton(m_operatorController, 6).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.scoreMotorSlowSpeed));
+
+            // Elevator Controls
+        /*R2 Button */ new JoystickButton(m_operatorController, 8).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.GL))).toggleOnTrue(new elevatorEncoderCmd(elevatorSubsystem, 0)).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+        /*X Button */ new JoystickButton(m_operatorController, 1).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.FL))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+        /*Y Button */ new JoystickButton(m_operatorController, 4).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L2))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+        /*A Button */ new JoystickButton(m_operatorController, 2).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L3))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+        /*B Button */ new JoystickButton(m_operatorController, 3).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L4))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+
+            // Elevaotor Offsets
+        /*Up Dpad */ new POVButton(m_operatorController, 0).whileTrue(new elevatorEncoderCmd(elevatorSubsystem, 1));
+        /*Down Dpad */ new POVButton(m_operatorController, 180).whileTrue(new elevatorEncoderCmd(elevatorSubsystem, 2));
+
+    }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
    * @return the command to run in autonomous
-   */
+   
   public Command getAutonomousCommand() {
     //return new SequentialCommandGroup(
     //    new InstantCommand(() -> m_robotDrive.resetPose(new Pose2d()), m_robotDrive),
@@ -215,7 +192,7 @@ new POVButton(m_operatorController, 180).whileTrue(new elevatorEncoderCmd(elevat
     //    new WaitCommand(2),
     //    new InstantCommand(() -> m_robotDrive.drive(0, 0, 0, true, 1), m_robotDrive));
 
-    
+
     // Create config for trajectory
     TrajectoryConfig config = new TrajectoryConfig(
         AutoConstants.kMaxSpeedMetersPerSecond,
@@ -253,10 +230,10 @@ new POVButton(m_operatorController, 180).whileTrue(new elevatorEncoderCmd(elevat
     m_robotDrive.resetPose(exampleTrajectory.getInitialPose());
 
     // Run path following command, then stop at the end.
-    return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, false, 1));
+    return swerveControllerCommand.andThen(() -> m_robotDrive.drive(0, 0, 0, true, 1));
     
   }
-
+*/
   public Command getAutonomousPathCommand() {
     // This method loads the auto when it is called, however, it is recommended
     // to first load your paths/autos when code starts, then return the
