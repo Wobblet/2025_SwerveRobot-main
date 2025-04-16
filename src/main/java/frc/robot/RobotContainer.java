@@ -9,6 +9,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PS4Controller.Button;
 import edu.wpi.first.wpilibj.XboxController;
@@ -17,6 +18,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -24,11 +27,7 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.OIConstants;
 import frc.robot.commands.ChangeSpeedModeCmd;
 import frc.robot.commands.ClimbCmd;
-import frc.robot.commands.RaiseFunnelCmd;
-import frc.robot.commands.ResetClimberCmd;
-import frc.robot.commands.ResetFunnelCmd;
-import frc.robot.commands.RetreatEndEffectorCmd;
-import frc.robot.commands.ScoreCmd;
+import frc.robot.commands.SetFunnelCmd;
 import frc.robot.commands.SetEndEffectorCmd;
 import frc.robot.commands.elevatorEncoderCmd;
 import frc.robot.subsystems.ClimberSubsystem;
@@ -79,9 +78,10 @@ public class RobotContainer {
         NamedCommands.registerCommand("raiseL2", new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L2)));
         NamedCommands.registerCommand("raiseL3", new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L3)));
         NamedCommands.registerCommand("raiseL4", new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L4)));
-
+        
         // Score Auto Command
-        NamedCommands.registerCommand("Score", new SetEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorSlowSpeed));
+        NamedCommands.registerCommand("Score", new SetEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.scoreMotorSlowSpeed).withTimeout(1));
+        NamedCommands.registerCommand("StopScore", new SetEndEffectorCmd(endEffectorSubsystem, 0).withTimeout(.5));
 
         // TODO Make am Auto Adjust Command Using Distance Sensor
         // TODO Make an Auto Align Command Using Limelight & AprilTags
@@ -142,11 +142,11 @@ public class RobotContainer {
         /*Back */ new JoystickButton(m_driverController, 7).whileTrue(new InstantCommand(m_robotDrive::zeroHeading, m_robotDrive));
 
             // Funnel Controls
-        /*Y Button */ new JoystickButton(m_driverController, 4).whileTrue(new RaiseFunnelCmd(funnelSubsystem, Constants.DriveConstants.funnelMotorSpeed));
-        /*A Button */ new JoystickButton(m_driverController, 1).whileTrue(new ResetFunnelCmd(funnelSubsystem, Constants.DriveConstants.resetFunnelMotorSpeed));
+        /*Y Button */ new JoystickButton(m_driverController, 4).whileTrue(new SetFunnelCmd(funnelSubsystem, Constants.DriveConstants.funnelMotorSpeed));
+        /*A Button */ new JoystickButton(m_driverController, 1).whileTrue(new SetFunnelCmd(funnelSubsystem, -Constants.DriveConstants.resetFunnelMotorSpeed));
 
             // Score Controls
-        /*B Button */ new JoystickButton(m_driverController, 2).whileTrue(new RetreatEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.retreatMotorSpeed));
+        /*B Button */ new JoystickButton(m_driverController, 2).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.retreatMotorSpeed));
         /*Right Triger*/ new Trigger(() -> m_driverController.getRawAxis(3) > .1).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -DriveConstants.scoreMotorFullSpeed));
         /*Left Triger*/new Trigger(() -> m_driverController.getRawAxis(2) > .1).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -DriveConstants.scoreMotorSlowSpeed));
     }
@@ -155,24 +155,24 @@ public class RobotContainer {
         
             // Climber Controls
         /*Start Button*/ new JoystickButton(m_operatorController, 10).whileTrue(new ClimbCmd(climberSubsystem, -Constants.DriveConstants.climberMotorSpeed));
-        /*Back Button */ new JoystickButton(m_operatorController, 9).whileTrue(new ResetClimberCmd(climberSubsystem, Constants.DriveConstants.resetClimberMotorSpeed));
+        /*Back Button */ new JoystickButton(m_operatorController, 9).whileTrue(new ClimbCmd(climberSubsystem, Constants.DriveConstants.resetClimberMotorSpeed));
         
             // Funnel Controls
-        /*L2 */ new JoystickButton(m_operatorController, 7).whileTrue(new RaiseFunnelCmd(funnelSubsystem, Constants.DriveConstants.funnelMotorSpeed));
+        ///*L2 */ new JoystickButton(m_operatorController, 7).whileTrue(new RaiseFunnelCmd(funnelSubsystem, Constants.DriveConstants.funnelMotorSpeed));
 
             // Score Controls
-        /*L3 */ new JoystickButton(m_operatorController, 11).whileTrue(new ScoreCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorFullSpeed));
+        /*L3 */ new JoystickButton(m_operatorController, 11).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.scoreMotorFullSpeed));
         /*R3 */ new JoystickButton(m_operatorController, 12).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorSlowSpeed));
-        /*L1 */ new JoystickButton(m_operatorController, 5).whileTrue(new RetreatEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.retreatMotorSpeed));
+        /*L1 */ new JoystickButton(m_operatorController, 5).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.retreatMotorSpeed));
         /*R1 */ new JoystickButton(m_operatorController, 6).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.scoreMotorSlowSpeed));
 
             // Elevator Controls
-        /*R2 Button */ new JoystickButton(m_operatorController, 8).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.GL))).toggleOnTrue(new elevatorEncoderCmd(elevatorSubsystem, 0)).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
+        /*R2 Button */ new JoystickButton(m_operatorController, 8).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.GL))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
         /*X Button */ new JoystickButton(m_operatorController, 1).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.FL))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
         /*Y Button */ new JoystickButton(m_operatorController, 4).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L2))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
         /*A Button */ new JoystickButton(m_operatorController, 2).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L3))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
         /*B Button */ new JoystickButton(m_operatorController, 3).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L4))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-
+                      new JoystickButton(m_operatorController, 3).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.resetH()));
             // Elevaotor Offsets
         /*Up Dpad */ new POVButton(m_operatorController, 0).whileTrue(new elevatorEncoderCmd(elevatorSubsystem, 1));
         /*Down Dpad */ new POVButton(m_operatorController, 180).whileTrue(new elevatorEncoderCmd(elevatorSubsystem, 2));
@@ -183,16 +183,16 @@ public class RobotContainer {
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
    * @return the command to run in autonomous
-   
+
   public Command getAutonomousCommand() {
-    //return new SequentialCommandGroup(
-    //    new InstantCommand(() -> m_robotDrive.resetPose(new Pose2d()), m_robotDrive),
-    //    new WaitCommand(1),
-    //    new RunCommand(() -> m_robotDrive.drive(-1, 0, 0, true, 1), m_robotDrive).withTimeout(2),
-    //    new WaitCommand(2),
-    //    new InstantCommand(() -> m_robotDrive.drive(0, 0, 0, true, 1), m_robotDrive));
-
-
+    return new SequentialCommandGroup(
+        new InstantCommand(() -> m_robotDrive.resetPose(new Pose2d()), m_robotDrive),
+        new WaitCommand(1),
+        new RunCommand(() -> m_robotDrive.drive(-1, 0, 0, true, 1), m_robotDrive).withTimeout(.5),
+        new WaitCommand(.5),
+        new InstantCommand(() -> m_robotDrive.drive(0, 0, 0, true, 1), m_robotDrive));
+  }
+/* 
     // Create config for trajectory
     TrajectoryConfig config = new TrajectoryConfig(
         AutoConstants.kMaxSpeedMetersPerSecond,

@@ -37,7 +37,7 @@ public class ElevatorSubsystem extends SubsystemBase {
             L1(59),
             L2(104),
             L3(163.7),
-            L4(260);
+            L4(256);
     
             private final double value;
             
@@ -55,11 +55,16 @@ public class ElevatorSubsystem extends SubsystemBase {
 
 
         public void setH(int value){
+            
             if (value == 1){
                 DriveConstants.h += .5;
             } else if (value == 2){
                 DriveConstants.h -= .5;
             }
+        }
+
+        public void resetH(){
+            DriveConstants.h = 0;
         }
             
         public ElevatorSubsystem(){
@@ -95,13 +100,13 @@ public class ElevatorSubsystem extends SubsystemBase {
             elevatorMotor1.stopMotor();
         }
         
-        public double getElevatorEncoderValue(){
-            return elevatorRelative.getPosition();
-        }
+        //public double getElevatorEncoderValue(){
+        //    return elevatorRelative.getPosition();
+        //}
     
-        public double getElevatorVelocity(){
-            return elevatorRelative.getVelocity();
-        }
+        //public double getElevatorVelocity(){
+        //    return elevatorRelative.getVelocity();
+        //}
     
         public void setPosition(ElevatorPositions position){
             m_ElevatorPID.setReference(position.getValue(), ControlType.kPosition);

@@ -40,7 +40,7 @@ public class pathConfig {
     //JSONObject json = (JSONObject) new JSONParser().parse(fileContent);
 
     boolean isHolonomic = true;
-    double massKG = 47.62; //((Number) json.get("robotMass")).doubleValue();
+    double massKG = 50.03; //((Number) json.get("robotMass")).doubleValue();
     double MOI = 6.883; //((Number) json.get("robotMOI")).doubleValue();
     double wheelRadius = 0.051; //((Number) json.get("driveWheelRadius")).doubleValue();
     double gearing = 5.143; //((Number) json.get("driveGearing")).doubleValue();

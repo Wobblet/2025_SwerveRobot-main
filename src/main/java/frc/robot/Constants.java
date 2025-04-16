@@ -10,9 +10,25 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotBase;
 
 
 public final class Constants {
+
+  public static final Mode simMode = Mode.SIM;
+  public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
+
+  public static enum Mode {
+    /** Running on a real robot. */
+    REAL,
+
+    /** Running a physics simulator. */
+    SIM,
+
+    /** Replaying from a log file. */
+    REPLAY
+  }
+
   public static final class DriveConstants {
     // Driving Parameters - Note that these are not the maximum capable speeds of
     // the robot, rather the allowed maximum speeds
@@ -22,13 +38,13 @@ public final class Constants {
     // Motor Speeds
     public static final double elevatorMotorSpeedSlow = 0.9;
     public static final double elevatorMotorSpeedFast = .9;
-    public static final double climberMotorSpeed = 0.7;
+    public static final double climberMotorSpeed = .8;
     public static final double resetClimberMotorSpeed = 0.4;
-    public static final double funnelMotorSpeed = 0.1;
+    public static final double funnelMotorSpeed = 0.3;
     public static final double resetFunnelMotorSpeed = 0.1;
     public static final double scoreMotorFullSpeed = 0.35;
-    public static final double scoreMotorSlowSpeed = 0.1;
-    public static final double scoreMotorSlowSpeedDrive = 0.3;
+    public static final double scoreMotorSlowSpeed = 0.15;
+    public static final double scoreMotorSlowSpeedDrive = 0.35;
     public static final double retreatMotorSpeed = 0.08;
 
     // Elevator Constants
@@ -38,7 +54,7 @@ public final class Constants {
     public static final double endEffectorDist = 0.08;
 
     // Elevator Encoder Value
-    public static int h = 0;
+    public static double h = 0;
 
     // Chassis configuration
     public static final double kTrackWidth = Units.inchesToMeters(26.5);

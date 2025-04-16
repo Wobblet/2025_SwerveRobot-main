@@ -107,13 +107,6 @@ public class Robot extends TimedRobot {
       SmartDashboard.putNumber("Range Onboard", distOnboard.getRange());
       SmartDashboard.putNumber("Timestamp Onboard", distOnboard.getTimestamp());
     }
-
-    if(distOnboard.getRange() >= Constants.DriveConstants.endEffectorDist){
-      m_robotContainer.endEffectorSubsystem.setEndEffector(-Constants.DriveConstants.scoreMotorSlowSpeed);
-    }
-    else{
-      m_robotContainer.endEffectorSubsystem.setEndEffector(0);
-    }
   }
 
   @Override

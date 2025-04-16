@@ -1,18 +1,18 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.ClimberSubsystem;
+import frc.robot.subsystems.FunnelSubsystem;
 import frc.robot.Constants;
 
-public class ResetClimberCmd extends Command {
+public class SetFunnelCmd extends Command {
 
-    private final ClimberSubsystem climberSubsystem;
+    private final FunnelSubsystem funnelSubsystem;
     private final double speed;
     
-    public ResetClimberCmd(ClimberSubsystem climberSubsystem, double speed){
-        this.climberSubsystem = climberSubsystem;
+    public SetFunnelCmd(FunnelSubsystem funnelSubsystem, double speed){
+        this.funnelSubsystem = funnelSubsystem;
         this.speed = speed;
-        addRequirements(climberSubsystem);
+        addRequirements(funnelSubsystem);
     }
 
     @Override
@@ -21,17 +21,17 @@ public class ResetClimberCmd extends Command {
 
     @Override
     public void execute(){
-        climberSubsystem.setClimber(speed);
+        funnelSubsystem.setFunnel(speed);
     }
 
     @Override
     public void end(boolean interrupted){
-        climberSubsystem.setClimber(0);
+        funnelSubsystem.setFunnel(0);
     }
 
     @Override
     public boolean isFinished(){
-        // if (climberSubsystem.getClimberEncoderValue() <= Constants.NeoMotorConstants.resetClimberEncoderLimit){
+        // if (funnelSubsystem.getFunnelEncoderValue() >= Constants.NeoMotorConstants.funnelEncoderLimit){
         //     return true;
         // }
         // else{

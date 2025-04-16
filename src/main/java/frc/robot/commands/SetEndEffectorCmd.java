@@ -25,6 +25,7 @@ public class SetEndEffectorCmd extends Command {
 
     @Override
     public void end(boolean interrupted){
+        System.out.println("Stopped!");
         endEffectorSubsystem.setEndEffector(0);
     }
 

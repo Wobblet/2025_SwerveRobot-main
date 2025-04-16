@@ -14,6 +14,8 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -26,12 +28,14 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Configs;
 import frc.robot.Constants;
 import frc.robot.pathConfig;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.LimelightHelpers;
 
 
 public class DriveSubsystem extends SubsystemBase {
@@ -60,10 +64,26 @@ public class DriveSubsystem extends SubsystemBase {
   //private final ADIS16470_IMU m_gyro = new ADIS16470_IMU();
   private final Pigeon2 m_Pigeon2 = new Pigeon2(12);
 
+  private final Field2d m_field = new Field2d();
+
   //private pathConfig pathConfig = new pathConfig(
+  
+  SwerveDrivePoseEstimator m_PoseEstimator = new SwerveDrivePoseEstimator(
+    DriveConstants.kDriveKinematics, 
+    Rotation2d.fromDegrees(m_Pigeon2.getYaw().getValueAsDouble() * -1), 
+    new SwerveModulePosition[] {
+        m_frontLeft.getPosition(),
+        m_frontRight.getPosition(),
+        m_rearLeft.getPosition(),
+        m_rearRight.getPosition()}, 
+    getPose(),
+    VecBuilder.fill(.05, .05, Units.degreesToRadians(5)),
+    VecBuilder.fill(.5, .5, Units.degreesToRadians(30))
+    );
   
 
   // Odometry class for tracking robot pose
+  /* 
   SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
       DriveConstants.kDriveKinematics,
       Rotation2d.fromDegrees(m_Pigeon2.getYaw().getValueAsDouble()),
@@ -73,7 +93,7 @@ public class DriveSubsystem extends SubsystemBase {
           m_rearLeft.getPosition(),
           m_rearRight.getPosition()
       });
-
+*/
   SwerveDriveKinematics m_kinematics;
 
   public static RobotConfig config;{
@@ -98,6 +118,19 @@ public class DriveSubsystem extends SubsystemBase {
             new Translation2d(Units.inchesToMeters(-12.5), Units.inchesToMeters(-12.5))); // Back Right
 
     
+    SmartDashboard.putData("Field", m_field);
+
+    // Change the camera pose relative to robot center (x forward, y left, z up, degrees)
+    
+    LimelightHelpers.setCameraPose_RobotSpace("", 
+    .406,    // Forward offset (meters)
+    0.050,    // Side offset (meters)
+    0.330,    // Height offset (meters)
+    0.0,    // Roll (degrees)
+    0.0,   // Pitch (degrees)
+    0.0     // Yaw (degrees)
+    );
+    
     // Configure AutoBuilder last
     
     AutoBuilder.configure(
@@ -106,8 +139,8 @@ public class DriveSubsystem extends SubsystemBase {
       this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
       (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
       new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
-            new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-            new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
+            new PIDConstants(0.04, 0.0, 0.0), // Translation PID constants
+            new PIDConstants(1.0, 0.0, 0.0) // Rotation PID constants
       ),
       config, // The robot configuration
       () -> {
@@ -117,7 +150,7 @@ public class DriveSubsystem extends SubsystemBase {
 
         var alliance = DriverStation.getAlliance();
         if (alliance.isPresent()) {
-          return alliance.get() == DriverStation.Alliance.Red;
+          return alliance.get() == DriverStation.Alliance.Blue;
         }
         return false;
      },
@@ -129,7 +162,7 @@ public class DriveSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // Update the odometry in the periodic block
-    m_odometry.update(
+    m_PoseEstimator.update(
         Rotation2d.fromDegrees(m_Pigeon2.getYaw().getValueAsDouble()),
         new SwerveModulePosition[] {
             m_frontLeft.getPosition(),
@@ -137,6 +170,21 @@ public class DriveSubsystem extends SubsystemBase {
             m_rearLeft.getPosition(),
             m_rearRight.getPosition()
         });
+
+
+    if (DriverStation.isAutonomous()){
+      LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+      if (limelightMeasurement.tagCount >= 2) {  // Only trust measurement if we see multiple tags
+        m_PoseEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
+        m_PoseEstimator.addVisionMeasurement(
+          limelightMeasurement.pose,
+          limelightMeasurement.timestampSeconds
+      );
+
+        m_field.setRobotPose(m_PoseEstimator.getEstimatedPosition());
+    
+      }
+    }
 
     SmartDashboard.putNumber("Swerve Gyro Angle", m_Pigeon2.getYaw().getValueAsDouble());
 
@@ -154,7 +202,12 @@ public class DriveSubsystem extends SubsystemBase {
    * @return The pose.
    */
   public Pose2d getPose() {
-    return m_odometry.getPoseMeters();
+    //return m_odometry.getPoseMeters();
+    return m_PoseEstimator.getEstimatedPosition();
+  }
+
+  public Pose2d getAutoPose(){
+    return m_PoseEstimator.getEstimatedPosition();
   }
 
   /**
@@ -163,6 +216,7 @@ public class DriveSubsystem extends SubsystemBase {
    * @param pose The pose to which to set the odometry.
    */
   public void resetPose(Pose2d pose) {
+    /*
     m_odometry.resetPosition(
         Rotation2d.fromDegrees(m_Pigeon2.getYaw().getValueAsDouble()),
         new SwerveModulePosition[] {
@@ -172,6 +226,17 @@ public class DriveSubsystem extends SubsystemBase {
             m_rearRight.getPosition()
         },
         pose);
+*/
+    m_PoseEstimator.resetPosition(
+        Rotation2d.fromDegrees(m_Pigeon2.getYaw().getValueAsDouble()), // This is what pathplanner uses for position
+        new SwerveModulePosition[] {
+          m_frontLeft.getPosition(),
+          m_frontRight.getPosition(),
+          m_rearLeft.getPosition(),
+          m_rearRight.getPosition()
+        },
+        getAutoPose());
+    
   }
 
   public ChassisSpeeds getRobotRelativeSpeeds(){

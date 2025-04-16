@@ -1,14 +1,21 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class EndEffectorSubsystem extends SubsystemBase {
-    private final SparkMax endEffectorMotor1 = new SparkMax(Constants.DriveConstants.EndEffectorId1, MotorType.kBrushless);
-    private final SparkMax endEffectorMotor2 = new SparkMax(Constants.DriveConstants.EndEffectorId2, MotorType.kBrushless);
+    private final SparkMax endEffectorMotor1;
+    private final SparkMax endEffectorMotor2;
+
+    public EndEffectorSubsystem(){
+        endEffectorMotor1 = new SparkMax(Constants.DriveConstants.EndEffectorId1, MotorType.kBrushless);
+        endEffectorMotor2 = new SparkMax(Constants.DriveConstants.EndEffectorId2, MotorType.kBrushless);
+    }
 
     public void setEndEffector(double speed){
         endEffectorMotor1.set(speed);
