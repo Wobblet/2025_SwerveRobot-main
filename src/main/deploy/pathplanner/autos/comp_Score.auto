@@ -11,36 +11,6 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "raiseL2"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 2.0
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Score"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "StopScore"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "raiseFl"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Top to Human Player"

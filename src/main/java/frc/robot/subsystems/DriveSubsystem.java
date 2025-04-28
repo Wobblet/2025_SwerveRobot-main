@@ -67,10 +67,10 @@ public class DriveSubsystem extends SubsystemBase {
   private final Field2d m_field = new Field2d();
 
   //private pathConfig pathConfig = new pathConfig(
-  
+  /*
   SwerveDrivePoseEstimator m_PoseEstimator = new SwerveDrivePoseEstimator(
     DriveConstants.kDriveKinematics, 
-    Rotation2d.fromDegrees(m_Pigeon2.getYaw().getValueAsDouble() * -1), 
+    Rotation2d.fromDegrees(-m_Pigeon2.getYaw().getValueAsDouble()), 
     new SwerveModulePosition[] {
         m_frontLeft.getPosition(),
         m_frontRight.getPosition(),
@@ -80,20 +80,19 @@ public class DriveSubsystem extends SubsystemBase {
     VecBuilder.fill(.05, .05, Units.degreesToRadians(5)),
     VecBuilder.fill(.5, .5, Units.degreesToRadians(30))
     );
-  
+  */
 
   // Odometry class for tracking robot pose
-  /* 
   SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(
       DriveConstants.kDriveKinematics,
-      Rotation2d.fromDegrees(m_Pigeon2.getYaw().getValueAsDouble()),
+      Rotation2d.fromDegrees(-m_Pigeon2.getYaw().getValueAsDouble()),
       new SwerveModulePosition[] {
           m_frontLeft.getPosition(),
           m_frontRight.getPosition(),
           m_rearLeft.getPosition(),
           m_rearRight.getPosition()
       });
-*/
+  
   SwerveDriveKinematics m_kinematics;
 
   public static RobotConfig config;{
@@ -139,8 +138,8 @@ public class DriveSubsystem extends SubsystemBase {
       this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
       (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
       new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
-            new PIDConstants(0.04, 0.0, 0.0), // Translation PID constants
-            new PIDConstants(1.0, 0.0, 0.0) // Rotation PID constants
+            new PIDConstants(0.2, 0.0, 0), // Translation PID constants
+            new PIDConstants(0.2, 0.0, 0) // Rotation PID constants
       ),
       config, // The robot configuration
       () -> {
@@ -150,7 +149,7 @@ public class DriveSubsystem extends SubsystemBase {
 
         var alliance = DriverStation.getAlliance();
         if (alliance.isPresent()) {
-          return alliance.get() == DriverStation.Alliance.Blue;
+          return alliance.get() == DriverStation.Alliance.Red;
         }
         return false;
      },
@@ -162,16 +161,17 @@ public class DriveSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // Update the odometry in the periodic block
-    m_PoseEstimator.update(
-        Rotation2d.fromDegrees(m_Pigeon2.getYaw().getValueAsDouble()),
+    /* 
+    m_odometry.update(
+        Rotation2d.fromDegrees(-m_Pigeon2.getYaw().getValueAsDouble()),
         new SwerveModulePosition[] {
             m_frontLeft.getPosition(),
             m_frontRight.getPosition(),
             m_rearLeft.getPosition(),
             m_rearRight.getPosition()
         });
-
-
+    */
+/* 
     if (DriverStation.isAutonomous()){
       LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
       if (limelightMeasurement.tagCount >= 2) {  // Only trust measurement if we see multiple tags
@@ -184,9 +184,11 @@ public class DriveSubsystem extends SubsystemBase {
         m_field.setRobotPose(m_PoseEstimator.getEstimatedPosition());
     
       }
-    }
+      }
+    */
+  
 
-    SmartDashboard.putNumber("Swerve Gyro Angle", m_Pigeon2.getYaw().getValueAsDouble());
+    //SmartDashboard.putNumber("Swerve Gyro Angle", m_Pigeon2.getYaw().getValueAsDouble());
 
     SmartDashboard.putNumber("Elevator Offset", DriveConstants.h);
 
@@ -194,6 +196,7 @@ public class DriveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("fLeftDrive", m_frontLeft.getRelativeEncoder());
     SmartDashboard.putNumber("bRightDrive", m_rearRight.getRelativeEncoder());
     SmartDashboard.putNumber("bLeftDrive", m_rearLeft.getRelativeEncoder());
+    
   }
 
   /**
@@ -202,13 +205,13 @@ public class DriveSubsystem extends SubsystemBase {
    * @return The pose.
    */
   public Pose2d getPose() {
-    //return m_odometry.getPoseMeters();
-    return m_PoseEstimator.getEstimatedPosition();
+    return m_odometry.getPoseMeters();
+    //return m_PoseEstimator.getEstimatedPosition();
   }
 
-  public Pose2d getAutoPose(){
-    return m_PoseEstimator.getEstimatedPosition();
-  }
+  //public Pose2d getAutoPose(){
+  //  return m_PoseEstimator.getEstimatedPosition();
+  // }
 
   /**
    * Resets the odometry to the specified pose.
@@ -216,9 +219,9 @@ public class DriveSubsystem extends SubsystemBase {
    * @param pose The pose to which to set the odometry.
    */
   public void resetPose(Pose2d pose) {
-    /*
+    
     m_odometry.resetPosition(
-        Rotation2d.fromDegrees(m_Pigeon2.getYaw().getValueAsDouble()),
+        Rotation2d.fromDegrees(-m_Pigeon2.getYaw().getValueAsDouble()),
         new SwerveModulePosition[] {
             m_frontLeft.getPosition(),
             m_frontRight.getPosition(),
@@ -226,7 +229,8 @@ public class DriveSubsystem extends SubsystemBase {
             m_rearRight.getPosition()
         },
         pose);
-*/
+      }
+/* 
     m_PoseEstimator.resetPosition(
         Rotation2d.fromDegrees(m_Pigeon2.getYaw().getValueAsDouble()), // This is what pathplanner uses for position
         new SwerveModulePosition[] {
@@ -236,8 +240,9 @@ public class DriveSubsystem extends SubsystemBase {
           m_rearRight.getPosition()
         },
         getAutoPose());
-    
+  
   }
+*/
 
   public ChassisSpeeds getRobotRelativeSpeeds(){
     return DriveConstants.kDriveKinematics.toChassisSpeeds(m_frontLeft.getState(),
