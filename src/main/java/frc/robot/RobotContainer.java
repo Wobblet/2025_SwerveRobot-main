@@ -83,7 +83,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("Score", new SetEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.scoreMotorSlowSpeed).withTimeout(1));
         NamedCommands.registerCommand("StopScore", new SetEndEffectorCmd(endEffectorSubsystem, 0).withTimeout(.5));
 
-        // TODO Make am Auto Adjust Command Using Distance Sensor
+        // TODO Make an Auto Adjust Command Using Distance Sensor
         // TODO Make an Auto Align Command Using Limelight & AprilTags
 
         configureDriverBindings();
@@ -163,7 +163,7 @@ public class RobotContainer {
             // Score Controls
         /*L3 */ new JoystickButton(m_operatorController, 11).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.scoreMotorFullSpeed));
         /*R3 */ new JoystickButton(m_operatorController, 12).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.scoreMotorSlowSpeed));
-        /*L1 */ new JoystickButton(m_operatorController, 5).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.retreatMotorSpeed));
+        /*L1 */ new JoystickButton(m_operatorController, 5).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, Constants.DriveConstants.retreatMotorSpeed));
         /*R1 */ new JoystickButton(m_operatorController, 6).whileTrue(new SetEndEffectorCmd(endEffectorSubsystem, -Constants.DriveConstants.scoreMotorSlowSpeed));
 
             // Elevator Controls
@@ -172,7 +172,7 @@ public class RobotContainer {
         /*Y Button */ new JoystickButton(m_operatorController, 4).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L2))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
         /*A Button */ new JoystickButton(m_operatorController, 2).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L3))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
         /*B Button */ new JoystickButton(m_operatorController, 3).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.setPosition(ElevatorPositions.L4))).toggleOnFalse(new InstantCommand(() -> elevatorSubsystem.stopElevator()));
-                      new JoystickButton(m_operatorController, 3).toggleOnTrue(new InstantCommand(() -> elevatorSubsystem.resetH()));
+
             // Elevaotor Offsets
         /*Up Dpad */ new POVButton(m_operatorController, 0).whileTrue(new elevatorEncoderCmd(elevatorSubsystem, 1));
         /*Down Dpad */ new POVButton(m_operatorController, 180).whileTrue(new elevatorEncoderCmd(elevatorSubsystem, 2));

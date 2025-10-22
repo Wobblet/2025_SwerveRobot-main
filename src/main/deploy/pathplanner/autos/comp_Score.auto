@@ -11,9 +11,21 @@
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Top to Human Player"
+            "name": "raiseL2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopScore"
           }
         }
       ]
